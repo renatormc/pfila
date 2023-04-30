@@ -7,6 +7,7 @@ import (
 
 type Process struct {
 	ID           uint `gorm:"primarykey"`
+	Type         string
 	Script       string
 	User         string
 	Pid          int
@@ -15,23 +16,24 @@ type Process struct {
 	Finish       time.Time
 	Status       string
 	RandomID     string
+	Params       string
 }
 
 func (Process) TableName() string {
 	return "process"
 }
 
-func (c *Process) SetJson(v any) error {
+func (proc *Process) SetParams(v any) error {
 	data, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
-	c.Value = string(data)
+	proc.Params = string(data)
 	return nil
 }
 
-func (c *Process) ParseJson(v any) error {
-	err := json.Unmarshal([]byte(c.Value), v)
+func (proc *Process) GetParams(v any) error {
+	err := json.Unmarshal([]byte(proc.Params), v)
 	if err != nil {
 		return err
 	}
