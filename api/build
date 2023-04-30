@@ -1,0 +1,5 @@
+#!/bin/bash
+go1.20 build -o ./dist/pfila &&
+if [ "$#" -ne 0 ]; then
+    ./dist/pfila $@
+fi
