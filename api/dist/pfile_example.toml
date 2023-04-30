@@ -1,0 +1,2 @@
+# Pasta onde serão gravados a saida dos processos
+console_folder = "/home/user/temp"
