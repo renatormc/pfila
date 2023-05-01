@@ -9,21 +9,31 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetProcessById(id int64) *models.Process {
+func GetProcessById(id int64) (*models.Process, error) {
 	db := database.GetDatabase()
 	proc := models.Process{}
 	if err := db.First(&proc, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil
-		}
-		log.Fatal(err)
+		return nil, err
 	}
-	return &proc
+	return &proc, nil
 }
 
-func SaveProc(proc *models.Process) {
+func GetAllProcesses() []models.Process {
+	db := database.GetDatabase()
+	procs := []models.Process{}
+	if err := db.Order("created_at asc").Find(&procs).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Fatal(err)
+		}
+
+	}
+	return procs
+}
+
+func SaveProc(proc *models.Process) error {
 	db := database.GetDatabase()
 	if err := db.Save(&proc).Error; err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }

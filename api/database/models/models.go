@@ -8,9 +8,10 @@ import (
 type Process struct {
 	ID           uint `gorm:"primarykey"`
 	Type         string
-	Script       string
+	Name         string
 	User         string
 	Pid          int
+	CreatedAt    time.Time
 	Start        time.Time
 	StartWaiting time.Time
 	Finish       time.Time

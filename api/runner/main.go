@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
 
 	"github.com/akamensky/argparse"
 	"github.com/reantormc/pfila/api/config"
 	"github.com/reantormc/pfila/api/database/repo"
+	"github.com/reantormc/pfila/api/processes"
 )
 
 func main() {
@@ -33,11 +33,13 @@ func main() {
 	cf := config.GetConfig()
 	outfile, err := os.Create(filepath.Join(cf.ConsoleFolder, proc.RandomID))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer outfile.Close()
-
-	cmd := exec.Command(filepath.Join(cf.ConsoleFolder, proc.RandomID))
+	cmd, err := processes.GetCmd(proc)
+	if err != nil {
+		log.Fatal(err)
+	}
 	cmd.Stderr = outfile
 	cmd.Stdout = outfile
 	if err := cmd.Run(); err != nil {
@@ -47,10 +49,18 @@ func main() {
 			outfile.WriteString(fmt.Sprintf("Process of id %d not found", *id))
 			log.Fatalf("Process of id %d not found", *id)
 		}
-		proc.Status = "FINISHED"
+		proc.Status = "ERROR"
 		proc.Finish = time.Now()
 		repo.SaveProc(proc)
 		log.Fatal(err)
 	}
+	proc = repo.GetProcessById(int64(*id))
+	if proc == nil {
+		outfile.WriteString(fmt.Sprintf("Process of id %d not found", *id))
+		log.Fatalf("Process of id %d not found", *id)
+	}
+	proc.Status = "FINISHED"
+	proc.Finish = time.Now()
+	repo.SaveProc(proc)
 
 }
