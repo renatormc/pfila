@@ -4,8 +4,8 @@ import (
 	"errors"
 	"log"
 
-	"github.com/reantormc/pfila/api/database"
-	"github.com/reantormc/pfila/api/database/models"
+	"github.com/renatormc/pfila/api/database"
+	"github.com/renatormc/pfila/api/database/models"
 	"gorm.io/gorm"
 )
 
@@ -36,4 +36,15 @@ func SaveProc(proc *models.Process) error {
 		return err
 	}
 	return nil
+}
+
+func GetProcessesByStatus(status string) []models.Process {
+	db := database.GetDatabase()
+	procs := []models.Process{}
+	if err := db.Where("status = ?", status).Find(&procs).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Fatal(err)
+		}
+	}
+	return procs
 }

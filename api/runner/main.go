@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/akamensky/argparse"
-	"github.com/reantormc/pfila/api/config"
-	"github.com/reantormc/pfila/api/database/repo"
-	"github.com/reantormc/pfila/api/processes"
+	"github.com/renatormc/pfila/api/config"
+	"github.com/renatormc/pfila/api/database/repo"
+	"github.com/renatormc/pfila/api/processes"
 )
 
 func main() {
@@ -24,8 +24,8 @@ func main() {
 		return
 	}
 
-	proc := repo.GetProcessById(int64(*id))
-	if proc == nil {
+	proc, err := repo.GetProcessById(int64(*id))
+	if err != nil {
 		fmt.Printf("Process of id %d not found", *id)
 		os.Exit(1)
 	}
@@ -44,8 +44,8 @@ func main() {
 	cmd.Stdout = outfile
 	if err := cmd.Run(); err != nil {
 		outfile.WriteString("\nPFila: Finalizou com erro")
-		proc = repo.GetProcessById(int64(*id))
-		if proc == nil {
+		proc, err := repo.GetProcessById(int64(*id))
+		if err != nil {
 			outfile.WriteString(fmt.Sprintf("Process of id %d not found", *id))
 			log.Fatalf("Process of id %d not found", *id)
 		}
@@ -54,8 +54,8 @@ func main() {
 		repo.SaveProc(proc)
 		log.Fatal(err)
 	}
-	proc = repo.GetProcessById(int64(*id))
-	if proc == nil {
+	proc, err = repo.GetProcessById(int64(*id))
+	if err != nil {
 		outfile.WriteString(fmt.Sprintf("Process of id %d not found", *id))
 		log.Fatalf("Process of id %d not found", *id)
 	}

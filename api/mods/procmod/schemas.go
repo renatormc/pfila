@@ -1,8 +1,8 @@
 package procmod
 
 import (
-	"github.com/reantormc/pfila/api/database/models"
-	"github.com/reantormc/pfila/api/helpers"
+	"github.com/renatormc/pfila/api/database/models"
+	"github.com/renatormc/pfila/api/helpers"
 )
 
 type ProcSchemaDump struct {

@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/reantormc/pfila/api/database"
+	"github.com/renatormc/pfila/api/database"
 	"gorm.io/gorm"
 )
 

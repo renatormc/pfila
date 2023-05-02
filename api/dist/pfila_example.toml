@@ -1,0 +1,5 @@
+# Pasta onde serão gravados a saida dos processos
+console_folder = "/home/user/temp"
+port = "8000"
+check_auth = false
+secret = ""

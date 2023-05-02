@@ -1,23 +1,35 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/reantormc/pfila/api/config"
-	"github.com/reantormc/pfila/api/database"
+	"github.com/renatormc/pfila/api/config"
+	"github.com/renatormc/pfila/api/database"
+	"github.com/renatormc/pfila/api/mods/procmod"
+	"github.com/renatormc/pfila/api/processes"
 )
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	config.LoadConfig()
+	cf := config.GetConfig()
 	database.Migrate()
 	r := gin.Default()
 
-	r.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "hello world")
-	})
+	api := r.Group("/api")
+	procmod.ConfigRoutes(api)
 
-	r.Run()
+	go func() {
+		for {
+			fmt.Println("checking processes")
+			if err := processes.CheckProcesses(); err != nil {
+				log.Fatal(err)
+			}
+			time.Sleep(30 * time.Second)
+		}
+
+	}()
+	log.Fatal(r.Run(fmt.Sprintf(":%s", cf.Port)))
 }

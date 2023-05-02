@@ -12,3 +12,21 @@
   @apply bg-blue-400;
 }
 
+.m-form-control {
+  @apply shadow appearance-none border rounded w-full py-2 px-3 p-2.5 text-gray-700 leading-tight focus:outline-none ring-blue-200 focus:ring ring-1;
+}
+.m-form-label {
+  @apply text-sm font-medium text-gray-900 dark:text-gray-300;
+}
+
+.m-input-checkbox {
+  @apply text-blue-500 bg-gray-100 rounded border-gray-300 focus:ring-blue-400 focus:ring-2;
+}
+
+.m-label-checkbox {
+  @apply text-sm font-medium text-gray-900;
+}
+
+.m-input {
+  @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5
+}

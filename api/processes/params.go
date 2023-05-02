@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/reantormc/pfila/api/database/models"
+	"github.com/renatormc/pfila/api/database/models"
 )
 
 type Params interface {

@@ -13,6 +13,9 @@ var config *Config
 type Config struct {
 	AppDir        string `toml:"-"`
 	ConsoleFolder string `toml:"console_folder"`
+	Port          string `toml:"port"`
+	CheckAuth     bool   `toml:"check_auth"`
+	Secret        string `toml:"secret"`
 }
 
 func GetConfig() Config {
@@ -28,7 +31,7 @@ func LoadConfig() *Config {
 		log.Fatal(err)
 	}
 	config = &Config{AppDir: filepath.Dir(ex)}
-	if _, err := os.Stat(filepath.Join(config.AppDir, "pfile.toml")); err != nil {
+	if _, err := os.Stat(filepath.Join(config.AppDir, "pfila.toml")); err != nil {
 
 		path, err := os.Getwd()
 		if err != nil {
@@ -36,7 +39,7 @@ func LoadConfig() *Config {
 		}
 		config.AppDir = filepath.Join(path, "dist")
 	}
-	if _, err := toml.DecodeFile(filepath.Join(config.AppDir, "pfile.toml"), config); err != nil {
+	if _, err := toml.DecodeFile(filepath.Join(config.AppDir, "pfila.toml"), config); err != nil {
 		log.Fatal(err)
 	}
 

@@ -1,4 +1,3 @@
-import HomePage from './pages/HomePage'
 import { Routes, Route } from "react-router-dom";
 import { AppProvider } from './AppContext';
 import CustomRouter from "~/custom_routes/CustomRoutes"
@@ -13,8 +12,8 @@ function App() {
     <AppProvider>
       <CustomRouter history={customHistory}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/processes" element={<ProcessesPage />} />
+        
+          <Route path="/" element={<ProcessesPage />} />
         </Routes>
       </CustomRouter>
     </AppProvider>
