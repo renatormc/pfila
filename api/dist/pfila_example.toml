@@ -3,3 +3,5 @@ console_folder = "/home/user/temp"
 port = "8000"
 check_auth = false
 secret = ""
+iped_folder = ""
+iped_profile_folder = ""

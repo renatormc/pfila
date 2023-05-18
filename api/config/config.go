@@ -11,12 +11,13 @@ import (
 var config *Config
 
 type Config struct {
-	AppDir        string `toml:"-"`
-	ConsoleFolder string `toml:"console_folder"`
-	Port          string `toml:"port"`
-	CheckAuth     bool   `toml:"check_auth"`
-	Secret        string `toml:"secret"`
-	IpedFolder    string `toml:"iped_folder"`
+	AppDir            string `toml:"-"`
+	ConsoleFolder     string `toml:"console_folder"`
+	Port              string `toml:"port"`
+	CheckAuth         bool   `toml:"check_auth"`
+	Secret            string `toml:"secret"`
+	IpedFolder        string `toml:"iped_folder"`
+	IpedProfileFolder string `toml:"iped_profile_folder"`
 }
 
 func GetConfig() Config {

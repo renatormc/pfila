@@ -2,7 +2,9 @@ package helpers
 
 import (
 	"errors"
+	"log"
 	"math"
+	"os"
 	"time"
 
 	"github.com/shirou/gopsutil/process"
@@ -30,4 +32,24 @@ func GetProcess(pid int32, startTime time.Time) (*process.Process, error) {
 		return p, nil
 	}
 	return nil, errors.New("not found")
+}
+
+func FileExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+		log.Fatal(err)
+	}
+
+	return !info.IsDir()
+}
+
+func DirectoryExists(path string) bool {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return info.IsDir()
 }
