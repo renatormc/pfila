@@ -3,6 +3,7 @@ package procmod
 import (
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +19,7 @@ func ConfigRoutes(group *gin.RouterGroup) {
 	group.POST("/proc", CreateProc)
 	group.PUT("/proc/:id", UpdateProc)
 	group.PUT("/queue-proc/:id", QueueProc)
-	group.PUT("/stop-proc/:id", QueueProc)
+	group.PUT("/stop-proc/:id", StopProc)
 	group.GET("/proc-console/:id", GetProcConsole)
 	group.DELETE("/proc/:id", DeleteProc)
 	group.GET("/disks", GetDisks)
@@ -35,7 +36,9 @@ func CreateProc(c *gin.Context) {
 	if !helpers.LoadFromBody[models.Process](c, &sl, &m) {
 		return
 	}
-	m.CreatedAt = time.Now()
+	m.CreatedAt = time.Now().Local()
+	m.Finish = time.Time{}
+	m.Status = "ADICIONADO"
 	if !helpers.SaveModel(c, &m) {
 		return
 	}
@@ -70,12 +73,17 @@ func DeleteProc(c *gin.Context) {
 }
 
 func QueueProc(c *gin.Context) {
+
 	m, ok := GetProcFromRequest(c)
 	if !ok {
 		return
 	}
-	m.StartWaiting = time.Now()
+
+	m.StartWaiting = time.Now().Local()
+	m.Finish = time.Time{}
+	m.Status = "AGUARDANDO"
 	if err := repo.SaveProc(m); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "interval server error"})
 		return
 	}
@@ -88,6 +96,14 @@ func StopProc(c *gin.Context) {
 		return
 	}
 	if err := processes.StopProcess(m); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "interval server error"})
+		return
+	}
+	m.Status = "CANCELADO"
+	m.Finish = time.Now().Local()
+	if err := repo.SaveProc(m); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "interval server error"})
 		return
 	}
@@ -99,7 +115,8 @@ func GetProcConsole(c *gin.Context) {
 	if !ok {
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"console": processes.GetProcConsole(m, 20)})
+	html := strings.ReplaceAll(processes.GetProcConsole(m, 20), "\n", "<br>")
+	c.JSON(http.StatusOK, gin.H{"console": html})
 }
 
 func GetDisks(c *gin.Context) {

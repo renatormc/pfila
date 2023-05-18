@@ -16,7 +16,6 @@ import (
 	"github.com/renatormc/pfila/api/config"
 	"github.com/renatormc/pfila/api/database"
 	"github.com/renatormc/pfila/api/database/models"
-	"github.com/renatormc/pfila/api/database/repo"
 	"github.com/renatormc/pfila/api/helpers"
 	"gorm.io/gorm"
 )
@@ -57,12 +56,6 @@ func StopProcess(proc *models.Process) error {
 		return err
 	}
 
-	proc.Status = "CANCELED"
-	proc.Finish = time.Now()
-	if err := repo.SaveProc(proc); err != nil {
-		log.Println(err)
-		return err
-	}
 	return nil
 }
 
@@ -89,18 +82,18 @@ func GetProcConsole(proc *models.Process, nLines int) string {
 		lines = buf
 	}
 
-	return strings.Join(lines, "\n")
+	return strings.TrimSpace(strings.Join(lines, "\n"))
 }
 
 func CheckProcesses() error {
 	var n int64
 	db := database.GetDatabase()
-	if err := db.Model(models.Process{}).Where("status = ?", "RUNNING").Count(&n).Error; err != nil {
+	if err := db.Model(models.Process{}).Where("status = ?", "EXECUTANDO").Count(&n).Error; err != nil {
 		return err
 	}
 	if n == 0 {
 		proc := models.Process{}
-		err := db.Where("status = ?", "WAITING").Order("start_waiting asc").First(&proc).Error
+		err := db.Where("status = ?", "AGUARDANDO").Order("start_waiting asc").First(&proc).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil

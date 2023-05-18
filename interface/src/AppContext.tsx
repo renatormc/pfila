@@ -42,9 +42,9 @@ export const AppProvider = (props: Props) => {
             setCurrentUser,
             isLoggedIn,
         }}>
-        
-            {props.children}
-       
+
+        {props.children}
+
 
     </AppContext.Provider>
 }

@@ -9,7 +9,7 @@ type Props = {
 const Button = ({ label, onClick, variant }: Props) => {
     switch (variant) {
         case "blue":
-            return <button className="block py-2 pr-4 pl-3 text-gray-100 rounded hover:bg-blue-600 bg-blue-400"
+            return <button className="block py-2 pr-4 pl-3 text-dourado-400 rounded hover:bg-azul-500 bg-azul-400"
                 onClick={onClick}>{label}</button>
     }
 }

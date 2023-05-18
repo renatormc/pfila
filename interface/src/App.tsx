@@ -12,7 +12,7 @@ function App() {
     <AppProvider>
       <CustomRouter history={customHistory}>
         <Routes>
-        
+          
           <Route path="/" element={<ProcessesPage />} />
         </Routes>
       </CustomRouter>

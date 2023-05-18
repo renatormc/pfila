@@ -14,6 +14,7 @@ function ProcessesPage() {
     const [console, setConsole] = useState("asdfasdf")
     const [procs, setProcs] = useState<Process[]>([])
     const [editingProc, setEditingProc] = useState<Process | null>(null)
+    const [selectedProcIndex, setSelectedProcIndex] = useState(-1)
 
     const load = async () => {
         const res = await api.getProcessess()
@@ -37,23 +38,63 @@ function ProcessesPage() {
         if (editingProc) {
             const res = api.createProcess(editingProc)
             setEditingProc(null)
+            load()
         }
+    }
+
+    const queueProcess = async (index: number) => {
+        const res = await api.queueProcess(procs[index].id)
+        const copy = [...procs]
+        copy[index] = res
+        setProcs(copy)
+    }
+
+    const deleteProcess = async (index: number) => {
+        await api.deleteProcess(procs[index].id)
+    }
+
+    const editProcess = async (index: number) => {
+        setEditingProc(procs[index])
+    }
+
+    const cancelProcess = async (index: number) => {
+        const res = await api.stopProcess(procs[index].id)
+        const copy = [...procs]
+        copy[index] = res
+        setProcs(copy)
+    }
+
+    const showConsole = async (index: number) => {
+        const res = await api.procConsole(procs[index].id)
+        setConsole(res)
     }
 
     useEffect(() => {
         load()
     }, [])
 
+    useEffect(() => {
+        if (selectedProcIndex > -1) {
+            showConsole(selectedProcIndex)
+        } else {
+            setConsole("")
+        }
+
+    }, [selectedProcIndex])
+
     return (
-        <div className="h-full bg-yellow-200">
+        <div className="h-screen pt-16 ">
             <NavBar1 onNew={onNew} />
-            <div className="px-6 h-full grow">
+            <div className="px-6 h-full ">
                 <p className="text-xl">Processos</p>
 
-                <div className="h-full ">
+                <div className="">
                     <table className="w-full text-sm text-left text-gray-500 ">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
+                                <th scope="col" className="px-6 py-3">
+                                    ID
+                                </th>
                                 <th scope="col" className="px-6 py-3">
                                     Nome
                                 </th>
@@ -62,6 +103,9 @@ function ProcessesPage() {
                                 </th>
                                 <th scope="col" className="px-6 py-3">
                                     Início
+                                </th>
+                                <th scope="col" className="px-6 py-3">
+                                    Entrada na fila
                                 </th>
                                 <th scope="col" className="px-6 py-3">
                                     Fim
@@ -73,21 +117,29 @@ function ProcessesPage() {
                                     Status
                                 </th>
                                 <th scope="col" className="px-6 py-3">
-                                   
+
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             {procs.map((proc, index) => {
-                                return <tr className="bg-white border-b dark:bg-gray-800 " key={index}>
-                                    <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap ">
-                                        {proc.name}
+                                return <tr className={`bg-white border-b hover:bg-gray-100 ${selectedProcIndex == index ? 'bg-gray-300' : 'bg' + proc.status}`}
+                                    key={index} >
+                                    <td className="px-6 py-4">
+                                        {proc.id}
+                                    </td>
+                                    <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap " >
+                                        <span className="cursor-pointer hover:text-gray-500" onClick={() => { setSelectedProcIndex(index) }}>{proc.name}</span>
+
                                     </th>
                                     <td className="px-6 py-4">
                                         {proc.user}
                                     </td>
                                     <td className="px-6 py-4">
                                         {proc.start}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {proc.start_waiting}
                                     </td>
                                     <td className="px-6 py-4">
                                         {proc.finish}
@@ -100,8 +152,10 @@ function ProcessesPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <Dropdown.Group label="OP">
-                                            <Dropdown.Item text="Item 1"/>
-                                            <Dropdown.Item text="Item 2"/>
+                                            <Dropdown.Item text="Editar" onClick={() => { editProcess(index) }} />
+                                            <Dropdown.Item text="Colocar na fila" onClick={() => { queueProcess(index) }} />
+                                            <Dropdown.Item text="Deletar" onClick={() => { deleteProcess(index) }} />
+                                            <Dropdown.Item text="Cancelar" onClick={() => { cancelProcess(index) }} />
                                         </Dropdown.Group>
                                     </td>
                                 </tr>
@@ -112,8 +166,8 @@ function ProcessesPage() {
             </div>
             <div className="fixed bottom-0 h-80 w-full">
                 <p className="text-lg mt-6 ml-2">Console</p>
-                <div className="w-full h-full bg-gray-600 text-gray-100 p-3  mt-1 " >
-                    {console}
+                <div className="w-full h-full bg-gray-600 text-gray-100 p-3  mt-1 " dangerouslySetInnerHTML={{ __html: console }}>
+
                 </div>
             </div>
             <Modal className="bg-white w-full max-w-2xl h-fit p-5 rounded-sm pt-8" show={editingProc != null} onToggleShow={() => { setEditingProc(null) }}>

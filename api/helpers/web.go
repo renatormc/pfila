@@ -24,13 +24,13 @@ func CheckDBError(c *gin.Context, err error) bool {
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"message": "not found"})
-			return false
+			return true
 		}
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "internal error"})
-		return false
+		return true
 	}
-	return true
+	return false
 }
 
 func LoadFromBody[M any](c *gin.Context, schema LoadSchema[M], model *M) bool {

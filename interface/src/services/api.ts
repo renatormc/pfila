@@ -1,6 +1,11 @@
 import { ListResponse, Process } from '~/types/types';
 import axios from './axios'
 
+const parseParams = (proc: Process): Process => {
+    proc.params = JSON.parse(proc.params as string)
+    return proc
+}
+
 export const getResources = async <T>(url: string): Promise<T[]> => {
     const resp = await axios.get<T[]>(url);
     return resp.data;
@@ -57,17 +62,31 @@ export const deleteProcess = async (id: number): Promise<any> => {
 
 export const getProcess = async (id: number): Promise<Process> => {
     const resp = await axios.get<Process>(`/api/proc/${id}`);
-    const p: Process = resp.data as Process
-    p.params = JSON.parse(p.params as string)
-    return resp.data;
+    return parseParams(resp.data)
 }
 
 export const getProcessess = async (): Promise<Process[]> => {
     const resp = await axios.get<Process[]>("/api/proc");
     const ps = resp.data as Process[]
-    console.log(ps)
     for (let index = 0; index < ps.length; index++) {
-        ps[index].params = JSON.parse(ps[index].params as string)
+        ps[index] = parseParams(ps[index])
     }
     return ps;
+}
+
+export const queueProcess = async (id: number): Promise<Process> => {
+    const resp = await axios.put<Process>(`/api/queue-proc/${id}`);
+    console.log(resp.data)
+    return parseParams(resp.data)
+}
+
+export const stopProcess = async (id: number): Promise<Process> => {
+    const resp = await axios.put<Process>(`/api/stop-proc/${id}`);
+    return parseParams(resp.data)
+}
+
+export const procConsole = async (id: number): Promise<string> => {
+    const resp = await axios.get<any>(`/api/proc-console/${id}`);
+    console.log(resp.data)
+    return resp.data.console;
 }

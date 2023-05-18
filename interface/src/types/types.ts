@@ -21,9 +21,9 @@ export interface Process {
     type: ProcType;
     name: string;
     user: string;
-    createdAt: string;
+    created_at: string;
     start: string;
-    startWaiting: string;
+    start_waiting: string;
     finish: string;
     status: string;
     params: ProcParams
@@ -75,9 +75,9 @@ export function getDefaultProcess(ptype: ProcType): Process {
         type: ptype,
         name: "",
         user: "",
-        createdAt: "",
+        created_at: "",
         start: "",
-        startWaiting: "",
+        start_waiting: "",
         finish: "",
         status: "ADDED",
         params: pars

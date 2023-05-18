@@ -34,3 +34,16 @@
 .m-label {
   @apply text-gray-600
 }
+
+
+.bgAGUARDANDO {
+  @apply bg-yellow-100
+}
+
+.bgFINALIZADO {
+  @apply bg-green-100
+}
+
+.bgERRO {
+  @apply bg-red-100
+}

@@ -6,18 +6,18 @@ import (
 )
 
 type ProcSchemaDump struct {
-	ID           uint
-	Type         string
-	Name         string
-	User         string
-	Pid          int
-	CreatedAt    string
-	Start        string
-	StartWaiting string
-	Finish       string
-	Status       string
-	RandomID     string
-	Params       string
+	ID           uint   `json:"id"`
+	Type         string `json:"type"`
+	Name         string `json:"name"`
+	User         string `json:"user"`
+	Pid          int    `json:"pid"`
+	CreatedAt    string `json:"created_at"`
+	Start        string `json:"start"`
+	StartWaiting string `json:"start_waiting"`
+	Finish       string `json:"finish"`
+	Status       string `json:"status"`
+	RandomID     string `json:"random_id"`
+	Params       string `json:"params"`
 }
 
 func SerializeProc(p *models.Process) ProcSchemaDump {
@@ -29,9 +29,9 @@ func SerializeProc(p *models.Process) ProcSchemaDump {
 		Status:       p.Status,
 		Params:       p.Params,
 		CreatedAt:    helpers.SerializeTime(p.CreatedAt),
-		Start:        helpers.SerializeTime(p.CreatedAt),
-		StartWaiting: helpers.SerializeTime(p.CreatedAt),
-		Finish:       helpers.SerializeTime(p.CreatedAt),
+		Start:        helpers.SerializeTime(p.Start),
+		StartWaiting: helpers.SerializeTime(p.StartWaiting),
+		Finish:       helpers.SerializeTime(p.Finish),
 	}
 	return schema
 }
