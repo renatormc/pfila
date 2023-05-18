@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { FtkParams, ProcType } from '~/types/types'
 import * as api from '~/services/api'
+import Checkbox from '../Checkbox'
+import Select from '../Select'
+import FormField from '../FormField'
 
 type Props = {
-    params: FtkParams
+    params: FtkParams,
+    setParams: (pars: FtkParams) => void
 }
 
-const FtkimagerProc = ({ params }: Props) => {
+const FtkimagerProc = ({ params, setParams }: Props) => {
     const [disks, setDisks] = useState<string[]>([])
     const [selectedDisk, setSelectedDisk] = useState("")
 
@@ -15,17 +19,34 @@ const FtkimagerProc = ({ params }: Props) => {
         setDisks(res)
     }
 
-    useEffect(()=>{
+    const updateField = <K extends keyof FtkParams>(field: K, value: FtkParams[K]) => {
+        const copy = { ...params }
+        copy[field] = value
+        setParams(copy)
+    }
+
+
+    useEffect(() => {
         loadDisks()
     }, [])
 
     return <>
-    <div className='flex flex-col gap-1 border'>
-        {disks.map((disk, index)=>{
-            return <div key={index} className={`cursor-pointer hover:bg-gray-200 p-2 ${selectedDisk == disk? 'bg-gray-200': ''}`}
-            onClick={()=>{setSelectedDisk(disk)}}>{disk}</div>
-        })}
-    </div>
+        <FormField label='Disco'>
+            <div className='flex flex-col gap-1 border'>
+                {disks.map((disk, index) => {
+                    return <div key={index} className={`cursor-pointer hover:bg-gray-200 p-2 ${selectedDisk == disk ? 'bg-gray-200' : ''}`}
+                        onClick={() => { setSelectedDisk(disk) }}>{disk}</div>
+                })}
+            </div>
+        </FormField>
+        <FormField label='Formato'>
+            <Select className='mb-3' onChange={(v) => { updateField('format', v) }} value={params?.format}
+                options={[
+                    { value: 'e01', text: 'e01' },
+                    { value: 'raw', text: 'raw' },
+                ]} />
+        </FormField>
+        <Checkbox className='mb-3' value={params?.verify} onChange={(v) => { updateField('verify', v) }} label='Verificar' />
     </>
 }
 

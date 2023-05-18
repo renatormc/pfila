@@ -1,5 +1,10 @@
 export type ErrorsType = { [key: string]: string[] }
 
+export type ErrorsTypeObj<T> = {
+    [key in keyof T]: string[]
+}
+
+
 export interface ListResponse<T> {
     per_page: number;
     page: number;
@@ -24,8 +29,7 @@ export interface Process {
     params: ProcParams
 }
 
-
-export type ProcParams = IpedParams | FtkParams
+export type ProcParams = IpedParams | FtkParams | string
 
 export interface IpedParams {
     destination: string;

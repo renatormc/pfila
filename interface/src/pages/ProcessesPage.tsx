@@ -4,6 +4,8 @@ import { ProcType, Process, getDefaultProcess } from "~/types/types";
 import * as api from "~/services/api"
 import Modal from "~/components/Modal";
 import SwitchProc from "~/components/proc/SwitchProc";
+import Button from "~/components/Button";
+import Input from "~/components/Input";
 
 
 
@@ -13,7 +15,7 @@ function ProcessesPage() {
     const [editingProc, setEditingProc] = useState<Process | null>(null)
 
     const load = async () => {
-        const res = await api.getResources<Process>("/api/proc")
+        const res = await api.getProcessess()
         setProcs(res)
     }
 
@@ -25,11 +27,19 @@ function ProcessesPage() {
         }
     }
 
-    const test = (ptype: ProcType) => {
+    const onNew = (ptype: ProcType) => {
         const p = getDefaultProcess(ptype)
         setEditingProc(p)
     }
 
+    const save = async () => {
+        if (editingProc) {
+            const p = { ...editingProc }
+            p.params = JSON.stringify(p.params)
+            const res = api.createResource<Process>(p, "/api/proc")
+            setEditingProc(null)
+        }
+    }
 
     useEffect(() => {
         load()
@@ -37,7 +47,7 @@ function ProcessesPage() {
 
     return (
         <div>
-            <NavBar1 onNew={test} />
+            <NavBar1 onNew={onNew} />
             <div className="px-6">
                 <p className="text-xl">Processos</p>
 
@@ -90,13 +100,17 @@ function ProcessesPage() {
                 <div className="flex flex-col">
                     <div className="flex flex-col gap-2">
                         <p className="mb-2 text-blue-600 text-xl">Novo processo</p>
-                        <label htmlFor="">Nome do processo</label>
-                        <input className="m-input" value={editingProc?.name}
-                            onChange={(e) => { updateField('name', e.target.value) }} />
-                        <label htmlFor="">Usuário</label>
-                        <input className="m-input" value={editingProc?.user}
-                            onChange={(e) => { updateField('user', e.target.value) }} />
-                        {editingProc && <SwitchProc ptype={editingProc.type} params={editingProc.params} setParams={(pars)=>{updateField('params', pars)}}/>}
+                        <div className="flex flex-col">
+                            <label className="m-label">Nome do processo</label>
+                            <Input value={editingProc?.name} onChange={(v) => { updateField('name', v) }} />
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="m-label">Usuário</label>
+                            <Input value={editingProc?.user} onChange={(v) => { updateField('user', v) }} />
+                        </div>
+
+                        {editingProc && <SwitchProc ptype={editingProc.type} params={editingProc.params} setParams={(pars) => { updateField('params', pars) }} />}
+                        <Button label="Gravar" variant="blue" onClick={save} />
                     </div>
                 </div>
             </Modal>

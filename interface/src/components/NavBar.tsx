@@ -3,17 +3,18 @@ import { Link } from 'react-router-dom'
 import { useContext } from 'react'
 import AppContext, { AppContextType } from '~/AppContext'
 import { ProcType } from '~/types/types'
+import Button from './Button'
 
 type Props = {
     onNew?: (ptype: ProcType) => void,
 }
 
-function Button(label: string, onClick?: () => void) {
-    return <button className="block py-2 pr-4 pl-3 text-gray-100 rounded hover:bg-blue-600 bg-blue-400"
-        onClick={onClick}>{label}</button>
-}
+// function Button(label: string, onClick?: () => void) {
+//     return <button className="block py-2 pr-4 pl-3 text-gray-100 rounded hover:bg-blue-600 bg-blue-400"
+//         onClick={onClick}>{label}</button>
+// }
 
-function NavBar1({ onNew  }: Props) {
+function NavBar1({ onNew }: Props) {
 
     return <>
         <nav className="bg-white border-gray-200 px-10 py-2.5 rounded ">
@@ -42,8 +43,8 @@ function NavBar1({ onNew  }: Props) {
 
                         <li>
                             <div className='flex gap-4'>
-                                {Button('Novo IPED', ()=>{onNew?.('iped')})}
-                                {Button('Nova Imagem', ()=>{onNew?.('ftkimager')})}
+                                <Button label="Novo IPED" onClick={() => { onNew?.('iped') }} variant='blue' />
+                                <Button label="Nova Imagem" onClick={() => { onNew?.('ftkimager') }} variant='blue' />
                             </div>
 
                         </li>

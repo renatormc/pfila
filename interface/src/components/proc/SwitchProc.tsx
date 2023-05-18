@@ -17,7 +17,7 @@ const SwitchProc = ({ ptype, params, setParams }: Props) => {
         case "iped":
             return <IpedProc params={params as IpedParams} setParams={setParams}/>
         case "ftkimager":
-            return <FtkimagerProc params={params as FtkParams}/>
+            return <FtkimagerProc params={params as FtkParams} setParams={setParams}/>
         default:
             return <p>{ptype}</p>
     }

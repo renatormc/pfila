@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react'
 import { IpedParams } from '~/types/types'
+import Input from '../Input'
+import Checkbox from '../Checkbox'
 
 type Props = {
     params: IpedParams,
@@ -33,21 +35,23 @@ const IpedProc = ({ params, setParams }: Props) => {
     }
 
     return <>
-        <label htmlFor="">Pasta de saída</label>
-        <input className="m-input" value={params?.destination}
-            onChange={(e) => { updateField('destination', e.target.value) }} />
-        <div className="flex items-center gap-4">
-            <label htmlFor="">Fontes</label> <i className="fa-solid fa-plus cursor-pointer hover:text-gray-500" onClick={addSource}></i>
+        <div className="flex flex-col">
+            <label className="m-label">Pasta de saída</label>
+            <Input value={params?.destination} onChange={(v) => { updateField('destination', v) }} />
         </div>
-
-        {params.sources.map((src, index) => {
-            return <div className="flex gap-3 w-full items-center" key={index}>
-                <input key={index} className="m-input w-full" value={src}
-                    onChange={(e) => { updateSource(index, e.target.value) }} />
-                <i className="fa-solid fa-minus text-red-600 cursor-pointer hover:text-gray-500 " onClick={() => { removeSource(index) }}></i>
+        <div className="flex flex-col">
+            <div className="flex items-center gap-4">
+                <label htmlFor="">Fontes</label> <i className="fa-solid fa-plus cursor-pointer hover:text-gray-500" onClick={addSource}></i>
             </div>
-        })}
 
+            {params.sources.map((src, index) => {
+                return <div className="flex gap-3 w-full items-center mb-2" key={index}>
+                    <Input className='w-full' value={src} onChange={(v) => { updateSource(index, v) }} />
+                    <i className="fa-solid fa-minus text-red-600 cursor-pointer hover:text-gray-500 " onClick={() => { removeSource(index) }}></i>
+                </div>
+            })}
+            
+        </div>
     </>
 }
 
