@@ -1,4 +1,4 @@
-package processes
+package iped
 
 import (
 	"os/exec"

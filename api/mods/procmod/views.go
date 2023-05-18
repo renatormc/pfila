@@ -1,6 +1,7 @@
 package procmod
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/renatormc/pfila/api/database/repo"
 	"github.com/renatormc/pfila/api/helpers"
 	"github.com/renatormc/pfila/api/processes"
+	"github.com/renatormc/pfila/api/processes/ftkimager"
 )
 
 func ConfigRoutes(group *gin.RouterGroup) {
@@ -19,6 +21,7 @@ func ConfigRoutes(group *gin.RouterGroup) {
 	group.PUT("/stop-proc/:id", QueueProc)
 	group.GET("/proc-console/:id", GetProcConsole)
 	group.DELETE("/proc/:id", DeleteProc)
+	group.GET("/disks", GetDisks)
 }
 
 func ListProcs(c *gin.Context) {
@@ -97,4 +100,14 @@ func GetProcConsole(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"console": processes.GetProcConsole(m, 20)})
+}
+
+func GetDisks(c *gin.Context) {
+	disks, err := ftkimager.GetDisks()
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "interval server error"})
+		return
+	}
+	c.JSON(http.StatusOK, disks)
 }

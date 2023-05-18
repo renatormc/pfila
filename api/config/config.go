@@ -16,6 +16,7 @@ type Config struct {
 	Port          string `toml:"port"`
 	CheckAuth     bool   `toml:"check_auth"`
 	Secret        string `toml:"secret"`
+	IpedFolder    string `toml:"iped_folder"`
 }
 
 func GetConfig() Config {

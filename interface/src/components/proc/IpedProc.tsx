@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { IpedParams } from '~/types/types'
 
 type Props = {
@@ -33,7 +33,6 @@ const IpedProc = ({ params, setParams }: Props) => {
     }
 
     return <>
-
         <label htmlFor="">Pasta de saída</label>
         <input className="m-input" value={params?.destination}
             onChange={(e) => { updateField('destination', e.target.value) }} />
@@ -42,10 +41,10 @@ const IpedProc = ({ params, setParams }: Props) => {
         </div>
 
         {params.sources.map((src, index) => {
-            return <div className="flex gap-3 w-full items-center">
+            return <div className="flex gap-3 w-full items-center" key={index}>
                 <input key={index} className="m-input w-full" value={src}
                     onChange={(e) => { updateSource(index, e.target.value) }} />
-                <i className="fa-solid fa-minus text-red-600 cursor-pointer hover:text-gray-500 " onClick={()=>{removeSource(index)}}></i>
+                <i className="fa-solid fa-minus text-red-600 cursor-pointer hover:text-gray-500 " onClick={() => { removeSource(index) }}></i>
             </div>
         })}
 

@@ -5,6 +5,8 @@ import (
 	"os/exec"
 
 	"github.com/renatormc/pfila/api/database/models"
+	"github.com/renatormc/pfila/api/processes/ftkimager"
+	"github.com/renatormc/pfila/api/processes/iped"
 )
 
 type Params interface {
@@ -15,9 +17,9 @@ func GetCmd(proc *models.Process) (*exec.Cmd, error) {
 	var pars Params
 	switch proc.Type {
 	case "iped":
-		pars = &IpedParams{}
+		pars = &iped.IpedParams{}
 	case "ftkimager":
-		pars = &FtkimagerParams{}
+		pars = &ftkimager.FtkimagerParams{}
 	default:
 		return nil, fmt.Errorf("type %q unknown", proc.Type)
 	}

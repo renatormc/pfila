@@ -1,4 +1,4 @@
-package processes
+package ftkimager
 
 import (
 	"os/exec"
