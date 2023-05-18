@@ -4,6 +4,7 @@ import * as api from '~/services/api'
 import Checkbox from '../Checkbox'
 import Select from '../Select'
 import FormField from '../FormField'
+import Input from '../Input'
 
 type Props = {
     params: FtkParams,
@@ -38,6 +39,10 @@ const FtkimagerProc = ({ params, setParams }: Props) => {
                         onClick={() => { setSelectedDisk(disk) }}>{disk}</div>
                 })}
             </div>
+        </FormField>
+        <FormField label='Destino'>
+            <Input className='w-full' onChange={(v) => { updateField('destination', v) }} 
+            value={params?.destination} placeholder='Endereço do arquivo de imagem sem extensão'/>
         </FormField>
         <FormField label='Formato'>
             <Select className='mb-3' onChange={(v) => { updateField('format', v) }} value={params?.format}

@@ -6,6 +6,7 @@ import Modal from "~/components/Modal";
 import SwitchProc from "~/components/proc/SwitchProc";
 import Button from "~/components/Button";
 import Input from "~/components/Input";
+import { Dropdown } from "~/components/Dropdown";
 
 
 
@@ -34,9 +35,7 @@ function ProcessesPage() {
 
     const save = async () => {
         if (editingProc) {
-            const p = { ...editingProc }
-            p.params = JSON.stringify(p.params)
-            const res = api.createResource<Process>(p, "/api/proc")
+            const res = api.createProcess(editingProc)
             setEditingProc(null)
         }
     }
@@ -46,12 +45,12 @@ function ProcessesPage() {
     }, [])
 
     return (
-        <div>
+        <div className="h-full bg-yellow-200">
             <NavBar1 onNew={onNew} />
-            <div className="px-6">
+            <div className="px-6 h-full grow">
                 <p className="text-xl">Processos</p>
 
-                <div className="relative overflow-x-auto">
+                <div className="h-full ">
                     <table className="w-full text-sm text-left text-gray-500 ">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
@@ -66,6 +65,15 @@ function ProcessesPage() {
                                 </th>
                                 <th scope="col" className="px-6 py-3">
                                     Fim
+                                </th>
+                                <th scope="col" className="px-6 py-3">
+                                    Tipo
+                                </th>
+                                <th scope="col" className="px-6 py-3">
+                                    Status
+                                </th>
+                                <th scope="col" className="px-6 py-3">
+                                   
                                 </th>
                             </tr>
                         </thead>
@@ -82,7 +90,19 @@ function ProcessesPage() {
                                         {proc.start}
                                     </td>
                                     <td className="px-6 py-4">
-                                        ${proc.finish}
+                                        {proc.finish}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {proc.type}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {proc.status}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <Dropdown.Group label="OP">
+                                            <Dropdown.Item text="Item 1"/>
+                                            <Dropdown.Item text="Item 2"/>
+                                        </Dropdown.Group>
                                     </td>
                                 </tr>
                             })}

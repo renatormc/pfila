@@ -34,14 +34,19 @@ export const AppProvider = (props: Props) => {
         loadUser()
     }, [])
 
-   
+
 
     return <AppContext.Provider value={
         {
             currentUser: currentUser,
             setCurrentUser,
             isLoggedIn,
-        }}>{props.children}</AppContext.Provider>
+        }}>
+        
+            {props.children}
+       
+
+    </AppContext.Provider>
 }
 
 export default AppContext;

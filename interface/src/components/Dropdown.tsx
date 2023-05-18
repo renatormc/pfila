@@ -52,7 +52,7 @@ const DropdownComponent = (props: Props) => {
     }, [show])
 
 
-    return <div className={`relative bg-green-200 ${props.className || ''}`}>
+    return <div className={`relative shadow-sm bg-indigo-700 text-gray-300 rounded-md ${props.className || ''}`}>
         <button className={`text-dourado-500 bg-azul-600  hover:bg-azul-500 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-right inline-flex justify-center items-center w-full`}
             type="button"
             onClick={() => { setShow(!show) }}
