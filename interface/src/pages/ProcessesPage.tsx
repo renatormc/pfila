@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import NavBar1 from '../components/NavBar'
-import { DEFAULT_PROCESS, Process } from "~/types/types";
+import { ProcType, Process, getDefaultProcess } from "~/types/types";
 import * as api from "~/services/api"
 import Modal from "~/components/Modal";
+import SwitchProc from "~/components/proc/SwitchProc";
+
+
 
 function ProcessesPage() {
-
     const [console, setConsole] = useState("asdfasdf")
     const [procs, setProcs] = useState<Process[]>([])
     const [editingProc, setEditingProc] = useState<Process | null>(null)
@@ -15,14 +17,28 @@ function ProcessesPage() {
         setProcs(res)
     }
 
+    const updateField = <K extends keyof Process>(field: K, value: Process[K]) => {
+        if (editingProc) {
+            const copy = { ...editingProc }
+            copy[field] = value
+            setEditingProc(copy)
+        }
+    }
+
+    const test = (ptype: ProcType) => {
+        const p = getDefaultProcess(ptype)
+        setEditingProc(p)
+    }
+
+
     useEffect(() => {
         load()
     }, [])
 
     return (
         <div>
-            <NavBar1 onNew={() => { setEditingProc(DEFAULT_PROCESS) }} />
-            <div className="px-2">
+            <NavBar1 onNew={test} />
+            <div className="px-6">
                 <p className="text-xl">Processos</p>
 
                 <div className="relative overflow-x-auto">
@@ -70,15 +86,19 @@ function ProcessesPage() {
                     {console}
                 </div>
             </div>
-            <Modal className="bg-white w-full h-1/2 p-2 rounded-sm" show={editingProc != null} onToggleShow={()=>{setEditingProc(null)}}>
+            <Modal className="bg-white w-full max-w-2xl h-fit p-5 rounded-sm pt-8" show={editingProc != null} onToggleShow={() => { setEditingProc(null) }}>
                 <div className="flex flex-col">
-                    <div className="flex flex-col">
-                        <label htmlFor="">teste</label>
-                        <input className="m-input" />
+                    <div className="flex flex-col gap-2">
+                        <p className="mb-2 text-blue-600 text-xl">Novo processo</p>
+                        <label htmlFor="">Nome do processo</label>
+                        <input className="m-input" value={editingProc?.name}
+                            onChange={(e) => { updateField('name', e.target.value) }} />
+                        <label htmlFor="">Usuário</label>
+                        <input className="m-input" value={editingProc?.user}
+                            onChange={(e) => { updateField('user', e.target.value) }} />
+                        {editingProc && <SwitchProc ptype={editingProc.type} params={editingProc.params} setParams={(pars)=>{updateField('params', pars)}}/>}
                     </div>
-
                 </div>
-
             </Modal>
         </div>
     );

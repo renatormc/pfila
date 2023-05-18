@@ -21,28 +21,64 @@ export interface Process {
     startWaiting: string;
     finish: string;
     status: string;
-    params?: ProcParams
+    params: ProcParams
 }
 
-export const DEFAULT_PROCESS: Process = {
-    id: 0,
-    type: "iped",
-    name: "",
-    user: "",
-    createdAt: "",
-    start: "",
-    startWaiting: "",
-    finish: "",
-    status: "ADDED",
-} 
 
 export type ProcParams = IpedParams | FtkParams
 
 export interface IpedParams {
-
+    destination: string;
+    sources: string[];
+    portable: boolean;
+    profile: string;
 }
-export interface FtkParams {
 
+export const DEFAULT_IPED_PARAMS: IpedParams = {
+    destination: "",
+    sources: [""],
+    portable: true,
+    profile: ""
+}
+
+export interface FtkParams {
+    disk: string;
+    destination: string;
+    verify: boolean;
+    format: string;
+}
+
+export const DEFAULT_FTK_PARAMS: FtkParams = {
+    disk: "",
+    destination: "",
+    verify: true,
+    format: "e01"
+}
+
+export function getDefaultProcess(ptype: ProcType): Process {
+    let pars: ProcParams
+    switch (ptype) {
+        case "iped":
+            pars = { ...DEFAULT_IPED_PARAMS }
+            break
+        case "ftkimager":
+            pars = { ...DEFAULT_FTK_PARAMS }
+            break
+    }
+    
+    const p = {
+        id: 0,
+        type: ptype,
+        name: "",
+        user: "",
+        createdAt: "",
+        start: "",
+        startWaiting: "",
+        finish: "",
+        status: "ADDED",
+        params: pars
+    }
+    return p
 }
 
 

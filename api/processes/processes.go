@@ -5,12 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
+
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,6 +17,7 @@ import (
 	"github.com/renatormc/pfila/api/database"
 	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/database/repo"
+	"github.com/renatormc/pfila/api/helpers"
 	"gorm.io/gorm"
 )
 
@@ -47,23 +47,16 @@ func Run(proc *models.Process) error {
 }
 
 func StopProcess(proc *models.Process) error {
-	p, err := os.FindProcess(proc.Pid)
+	p, err := helpers.GetProcess(int32(proc.Pid), proc.Start)
 	if err != nil {
 		return nil
 	}
 
-	var rusage syscall.Rusage
-	if err := syscall.Getrusage(proc.Pid, &rusage); err != nil {
+	if err := p.Kill(); err != nil {
 		log.Println(err)
 		return err
 	}
-	startTime := time.Unix(int64(rusage.Utime.Sec), int64(rusage.Utime.Usec)*1000)
-	if math.Abs(startTime.Sub(proc.Start).Seconds()) < 30 {
-		if err := p.Kill(); err != nil {
-			log.Println(err)
-			return err
-		}
-	}
+
 	proc.Status = "CANCELED"
 	proc.Finish = time.Now()
 	if err := repo.SaveProc(proc); err != nil {
