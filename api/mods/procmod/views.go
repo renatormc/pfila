@@ -3,7 +3,6 @@ package procmod
 import (
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -116,8 +115,11 @@ func GetProcConsole(c *gin.Context) {
 	if !ok {
 		return
 	}
-	html := strings.ReplaceAll(processes.GetProcConsole(m, 20), "\n", "<br>")
-	c.JSON(http.StatusOK, gin.H{"console": html})
+	// html := strings.ReplaceAll(processes.GetProcConsole(m, 20), "\n", "<br>")
+	// c.JSON(http.StatusOK, gin.H{"console": html})
+	// html := strings.ReplaceAll(processes.GetProcConsole(m, 20), "\n", "<br>")
+	log.Print(processes.GetProcConsole(m, 20))
+	c.JSON(http.StatusOK, gin.H{"console": processes.GetProcConsole(m, 20)})
 }
 
 func GetDisks(c *gin.Context) {

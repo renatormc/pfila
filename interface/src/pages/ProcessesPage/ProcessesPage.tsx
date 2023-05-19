@@ -17,6 +17,7 @@ function ProcessesPage() {
     const [console, setConsole] = useState("asdfasdf")
     const [procs, setProcs] = useState<Process[]>([])
     const [editingProc, setEditingProc] = useState<Process | null>(null)
+    const [showingProc, setShowingProc] = useState<Process | null>(null)
     const [selectedProcIndex, setSelectedProcIndex] = useState(-1)
     const [errors, setErrors] = useState<ErrorsType>({})
     const [loadingParams, setLoadingParams] = useState(false)
@@ -44,7 +45,12 @@ function ProcessesPage() {
     const save = async () => {
         if (editingProc) {
             try {
-                const res = await api.createProcess(editingProc)
+                let res: Process
+                if(editingProc.id > 0){
+                    res = await api.updateProcess(editingProc.id, editingProc)
+                }else{
+                    res = await api.createProcess(editingProc)
+                }
                 setEditingProc(null)
                 load()
             } catch (error) {
@@ -65,6 +71,9 @@ function ProcessesPage() {
 
     const deleteProcess = async (index: number) => {
         await api.deleteProcess(procs[index].id)
+        const copy = [...procs]
+        copy.splice(index, 1)
+        setProcs(copy)
     }
 
     const editProcess = async (index: number) => {
@@ -173,6 +182,7 @@ function ProcessesPage() {
                                             <Dropdown.Item text="Colocar na fila" onClick={() => { queueProcess(index) }} />
                                             <Dropdown.Item text="Deletar" onClick={() => { deleteProcess(index) }} />
                                             <Dropdown.Item text="Cancelar" onClick={() => { cancelProcess(index) }} />
+                                            <Dropdown.Item text="Ver parâmetros" onClick={() => { setShowingProc(procs[index]) }} />
                                         </Dropdown.Group>
                                     </td>
                                 </tr>
@@ -183,8 +193,10 @@ function ProcessesPage() {
             </div>
             <div className="fixed bottom-0 h-80 w-full">
                 <p className="text-lg mt-6 ml-2">Console</p>
-                <div className="w-full h-full bg-gray-600 text-gray-100 p-3  mt-1 " dangerouslySetInnerHTML={{ __html: console }}>
-
+                
+                {/* <div className="w-full h-full bg-gray-700 text-gray-100 p-3  mt-1 " dangerouslySetInnerHTML={{ __html: console }}> */}
+                <div className="w-full h-full bg-gray-700 text-gray-100 p-3  mt-1 ">
+                <pre>{console}</pre>
                 </div>
             </div>
             <Modal className="bg-white w-full max-w-2xl h-fit p-5 rounded-sm pt-8" show={editingProc != null} onToggleShow={() => { setEditingProc(null) }}>
@@ -192,7 +204,7 @@ function ProcessesPage() {
                     <div className="flex flex-col gap-2">
                         <p className="mb-2 text-blue-600 text-xl">Novo processo</p>
                         <FormField label='Nome do processo' errors={errors.name}>
-                            <Input className="w-full" value={editingProc?.name} onChange={(v) => { updateField('name', v) }} />
+                            <Input className="w-full" value={editingProc?.name} onChange={(v) => { updateField('name', v) }} autoFocus/>
                         </FormField>
                         <FormField label='Usuário' errors={errors.user}>
                             <Input className="w-full" value={editingProc?.user} onChange={(v) => { updateField('user', v) }} />
@@ -207,6 +219,9 @@ function ProcessesPage() {
                         <Button label="Gravar" variant="blue" onClick={save} />
                     </div>
                 </div>
+            </Modal>
+            <Modal className="bg-gray-700 text-gray-50 w-full max-w-2xl h-fit p-5 rounded-sm pt-8 shadow-2xl" show={showingProc != null} onToggleShow={() => { setShowingProc(null) }}>
+                <pre>{JSON.stringify(showingProc?.params, undefined, 2)}</pre>
             </Modal>
             <WaitingModal message={loadingParams ? 'carregando': ''}/>
         </div>

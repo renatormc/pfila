@@ -49,7 +49,7 @@ func LoadFromBody[M any](c *gin.Context, schema LoadSchema[M], model *M) bool {
 
 func SaveModel(c *gin.Context, model interface{}) bool {
 	db := database.GetDatabase()
-	if err := db.Save(model); err != nil {
+	if err := db.Save(model).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "internal error"})
 		return false
@@ -59,7 +59,7 @@ func SaveModel(c *gin.Context, model interface{}) bool {
 
 func DeleteModel(c *gin.Context, model interface{}) bool {
 	db := database.GetDatabase()
-	if err := db.Delete(model); err != nil {
+	if err := db.Delete(model).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "internal error"})
 		return false
