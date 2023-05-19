@@ -1,20 +1,21 @@
 import React from 'react'
 
 type Props = {
-    error?: string,
+    errors?: string[],
     children: JSX.Element | JSX.Element[],
     label?: string,
     className?: string
 }
 
-const FormField = ({ error, children, label, className }: Props) => {
+const FormField = ({ errors, children, label, className }: Props) => {
     return <div className={`flex flex-col ${className || ''} `}>
         {label && <label className="m-label">{label}</label>}
-        <div className={`${error && 'border-red-200 border-2'}`}>
+        <div className={`${errors && 'bg-red-100 p-1 rounded-lg'}`}>
             {children}
         </div>
-
-        {error && <span className='text-red-500 text-sm italic'>{error}</span>}
+        {errors?.map((err, i)=>{
+            return <span className='text-red-500 text-sm italic'>{err}</span>
+        })}
     </div>
 }
 

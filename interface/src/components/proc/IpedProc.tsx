@@ -1,14 +1,17 @@
 import React, { useEffect } from 'react'
-import { IpedParams } from '~/types/types'
+import { ErrorsType, IpedParams } from '~/types/types'
 import Input from '../Input'
 import Checkbox from '../Checkbox'
 
 type Props = {
     params: IpedParams,
-    setParams: (pars: IpedParams) => void
+    setParams: (pars: IpedParams) => void,
+    errors: ErrorsType,
+    loadingParams: boolean,
+    setLoadingParams: (v: boolean) => void
 }
 
-const IpedProc = ({ params, setParams }: Props) => {
+const IpedProc = ({ params, setParams, errors }: Props) => {
 
     const updateField = <K extends keyof IpedParams>(field: K, value: IpedParams[K]) => {
         const copy = { ...params }

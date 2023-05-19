@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { AppProvider } from './AppContext';
 import CustomRouter from "~/custom_routes/CustomRoutes"
 import customHistory from "~/custom_routes/history";
-import ProcessesPage from './pages/ProcessesPage';
+import ProcessesPage from './pages/ProcessesPage/ProcessesPage';
 
 
 function App() {

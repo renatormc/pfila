@@ -36,6 +36,7 @@ func CreateProc(c *gin.Context) {
 	if !helpers.LoadFromBody[models.Process](c, &sl, &m) {
 		return
 	}
+
 	m.CreatedAt = time.Now().Local()
 	m.Finish = time.Time{}
 	m.Status = "ADICIONADO"
@@ -65,7 +66,7 @@ func DeleteProc(c *gin.Context) {
 	if !ok {
 		return
 	}
-	if !helpers.DeleteModel(c, &m) {
+	if !helpers.DeleteModel(c, m) {
 		return
 	}
 

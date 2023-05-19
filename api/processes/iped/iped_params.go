@@ -31,8 +31,7 @@ func (p *IpedParams) ToCmd() *exec.Cmd {
 	return exec.Command("iped", args...)
 }
 
-func (p *IpedParams) Validate() *helpers.ValidationError {
-	ve := helpers.NewValidationError()
+func (p *IpedParams) Validate(ve *helpers.ValidationError) {
 	if !helpers.DirectoryExists(p.Destination) {
 		ve.AddMessage("destination", "Diretório não encontrado")
 	}
@@ -47,8 +46,4 @@ func (p *IpedParams) Validate() *helpers.ValidationError {
 	if !helpers.DirectoryExists(path) {
 		ve.AddMessage("profile", "Perfil não encontrado")
 	}
-	if len(ve.Messages) > 0 {
-		return ve
-	}
-	return nil
 }

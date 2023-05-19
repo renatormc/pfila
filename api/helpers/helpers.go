@@ -53,3 +53,13 @@ func DirectoryExists(path string) bool {
 	}
 	return info.IsDir()
 }
+
+func SliceContains[M comparable](s []M, value M) bool {
+	for _, v := range s {
+		if v == value {
+			return true
+		}
+	}
+
+	return false
+}

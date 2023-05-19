@@ -1,23 +1,34 @@
 import React from 'react'
-import { FtkParams, IpedParams, ProcParams, ProcType } from '~/types/types'
+import { ErrorsType, FtkParams, IpedParams, ProcParams, ProcType } from '~/types/types'
 import IpedProc from './IpedProc'
 import FtkimagerProc from './FtkimagerProc'
 
 type Props = {
     ptype: ProcType,
     params: ProcParams,
-    setParams: (pars: ProcParams) => void
+    setParams: (pars: ProcParams) => void,
+    errors: ErrorsType,
+    loadingParams: boolean,
+    setLoadingParams: (v: boolean) => void
 }
 
-const SwitchProc = ({ ptype, params, setParams }: Props) => {
-    if(!params){
+const SwitchProc = ({ ptype, params, setParams, errors, loadingParams, setLoadingParams }: Props) => {
+    if (!params) {
         return <></>
     }
     switch (ptype) {
         case "iped":
-            return <IpedProc params={params as IpedParams} setParams={setParams}/>
+            return <IpedProc params={params as IpedParams}
+                setParams={setParams}
+                errors={errors} 
+                loadingParams={loadingParams}
+                setLoadingParams={setLoadingParams}/>
         case "ftkimager":
-            return <FtkimagerProc params={params as FtkParams} setParams={setParams}/>
+            return <FtkimagerProc params={params as FtkParams}
+                setParams={setParams}
+                errors={errors} 
+                loadingParams={loadingParams}
+                setLoadingParams={setLoadingParams}/>
         default:
             return <p>{ptype}</p>
     }

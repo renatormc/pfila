@@ -1,8 +1,13 @@
 package procmod
 
 import (
+	"fmt"
+	"log"
+	"strings"
+
 	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/helpers"
+	"github.com/renatormc/pfila/api/processes"
 )
 
 type ProcSchemaDump struct {
@@ -53,9 +58,30 @@ type ProcSchemaLoad struct {
 }
 
 func (pl *ProcSchemaLoad) Fill(m *models.Process) *helpers.ValidationError {
-	m.Name = pl.Name
+	ve := helpers.NewValidationError()
+	m.Name = strings.TrimSpace(pl.Name)
+	if m.Name == "" {
+		ve.AddMessage("name", "Campo obrigatório")
+	}
 	m.Type = pl.Type
-	m.User = pl.User
+	if m.Type != "iped" && m.Type != "ftkimager" {
+		ve.AddMessage("type", "Tipo não conhecido")
+	}
+	m.User = strings.TrimSpace(pl.User)
+	if m.User == "" {
+		ve.AddMessage("user", "Campo obrigatório")
+	}
 	m.Params = pl.Params
+	pars, err := processes.GetParams(m)
+	if err != nil {
+		log.Println(err)
+		ve.AddMessage("internal", "erro interno")
+		return ve
+	}
+	pars.Validate(ve)
+	fmt.Println(ve.Messages)
+	if len(ve.Messages) > 0 {
+		return ve
+	}
 	return nil
 }
