@@ -37,7 +37,7 @@
 
 
 .bgAGUARDANDO {
-  @apply bg-yellow-100
+  @apply bg-gray-50
 }
 
 .bgFINALIZADO {
@@ -46,4 +46,8 @@
 
 .bgERRO {
   @apply bg-red-100
+}
+
+.bgEXECUTANDO {
+  @apply bg-yellow-50
 }

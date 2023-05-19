@@ -10,15 +10,16 @@ import { Dropdown } from "~/components/Dropdown";
 import FormField from "~/components/FormField";
 import { AxiosError } from "axios";
 import WaitingModal from "~/components/WaitingModal";
+import Console from "./Console";
+import { spawn } from "child_process";
 
 
 
 function ProcessesPage() {
-    const [console, setConsole] = useState("asdfasdf")
     const [procs, setProcs] = useState<Process[]>([])
     const [editingProc, setEditingProc] = useState<Process | null>(null)
     const [showingProc, setShowingProc] = useState<Process | null>(null)
-    const [selectedProcIndex, setSelectedProcIndex] = useState(-1)
+    const [selectedProc, setSelectedProc] = useState<Process | null>(null)
     const [errors, setErrors] = useState<ErrorsType>({})
     const [loadingParams, setLoadingParams] = useState(false)
 
@@ -42,13 +43,21 @@ function ProcessesPage() {
         setEditingProc(p)
     }
 
+    const selectProc = (p: Process) => {
+        if (selectedProc && selectedProc.id == p.id) {
+            setSelectedProc(null)
+        } else {
+            setSelectedProc(p)
+        }
+    }
+
     const save = async () => {
         if (editingProc) {
             try {
                 let res: Process
-                if(editingProc.id > 0){
+                if (editingProc.id > 0) {
                     res = await api.updateProcess(editingProc.id, editingProc)
-                }else{
+                } else {
                     res = await api.createProcess(editingProc)
                 }
                 setEditingProc(null)
@@ -88,36 +97,26 @@ function ProcessesPage() {
         setProcs(copy)
     }
 
-    const showConsole = async (index: number) => {
-        const res = await api.procConsole(procs[index].id)
-        setConsole(res)
-    }
-
-
     useEffect(() => {
         load()
     }, [])
-
-    useEffect(() => {
-        if (selectedProcIndex > -1) {
-            showConsole(selectedProcIndex)
-        } else {
-            setConsole("")
-        }
-
-    }, [selectedProcIndex])
 
 
     return (
         <div className="h-screen pt-16 ">
             <NavBar1 onNew={onNew} />
             <div className="px-6 h-full ">
-                <p className="text-xl">Processos</p>
+                <div className="flex justify-between">
+                    <p className="text-xl">Processos</p>
+                    <i className="fa-solid fa-arrows-rotate cursor-pointer hover:text-gray-500" onClick={load}></i>
+                </div>
+
 
                 <div className="">
                     <table className="w-full text-sm text-left text-gray-500 ">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
+                                <th></th>
                                 <th scope="col" className="px-6 py-3">
                                     ID
                                 </th>
@@ -149,13 +148,16 @@ function ProcessesPage() {
                         </thead>
                         <tbody>
                             {procs.map((proc, index) => {
-                                return <tr className={`bg-white border-b hover:bg-gray-100 ${selectedProcIndex == index ? 'bg-gray-300' : 'bg' + proc.status}`}
+                                return <tr className={`bg-white border-b  bg${proc.status}`}
                                     key={index} >
+                                    <td className="text-right text-xl pl-2 text-azul-500">
+                                        {selectedProc && selectedProc.id == proc.id ? <i className="fa-regular fa-hand-point-right cursor-pointer" onClick={() => { selectProc(proc) }}></i> : <span> </span>}
+                                    </td>
                                     <td className="px-6 py-4">
                                         {proc.id}
                                     </td>
-                                    <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap " >
-                                        <span className="cursor-pointer hover:text-gray-500" onClick={() => { setSelectedProcIndex(index) }}>{proc.name}</span>
+                                    <th scope="row" className={`px-6 py-4 font-medium  whitespace-nowrap `} >
+                                        <span className="cursor-pointer " onClick={() => { selectProc(proc) }}>{proc.name}</span>
 
                                     </th>
                                     <td className="px-6 py-4">
@@ -191,20 +193,15 @@ function ProcessesPage() {
                     </table>
                 </div>
             </div>
-            <div className="fixed bottom-0 h-80 w-full">
-                <p className="text-lg mt-6 ml-2">Console</p>
-                
-                {/* <div className="w-full h-full bg-gray-700 text-gray-100 p-3  mt-1 " dangerouslySetInnerHTML={{ __html: console }}> */}
-                <div className="w-full h-full bg-gray-700 text-gray-100 p-3  mt-1 ">
-                <pre>{console}</pre>
-                </div>
+            <div className="fixed bottom-16 h-80 w-full px-2">
+                <Console className="w-full h-full" proc={selectedProc} />
             </div>
             <Modal className="bg-white w-full max-w-2xl h-fit p-5 rounded-sm pt-8" show={editingProc != null} onToggleShow={() => { setEditingProc(null) }}>
                 <div className="flex flex-col">
                     <div className="flex flex-col gap-2">
                         <p className="mb-2 text-blue-600 text-xl">Novo processo</p>
                         <FormField label='Nome do processo' errors={errors.name}>
-                            <Input className="w-full" value={editingProc?.name} onChange={(v) => { updateField('name', v) }} autoFocus/>
+                            <Input className="w-full" value={editingProc?.name} onChange={(v) => { updateField('name', v) }} autoFocus />
                         </FormField>
                         <FormField label='Usuário' errors={errors.user}>
                             <Input className="w-full" value={editingProc?.user} onChange={(v) => { updateField('user', v) }} />
@@ -223,7 +220,7 @@ function ProcessesPage() {
             <Modal className="bg-gray-700 text-gray-50 w-full max-w-2xl h-fit p-5 rounded-sm pt-8 shadow-2xl" show={showingProc != null} onToggleShow={() => { setShowingProc(null) }}>
                 <pre>{JSON.stringify(showingProc?.params, undefined, 2)}</pre>
             </Modal>
-            <WaitingModal message={loadingParams ? 'carregando': ''}/>
+            <WaitingModal message={loadingParams ? 'carregando' : ''} />
         </div>
     );
 }

@@ -15,7 +15,7 @@ type IpedParams struct {
 	Profile     string   `json:"profile"`
 }
 
-func (p *IpedParams) ToCmd() *exec.Cmd {
+func (p *IpedParams) ToCmd() (*exec.Cmd, error) {
 	args := []string{}
 	for _, src := range p.Sources {
 		args = append(args, "-d")
@@ -28,7 +28,7 @@ func (p *IpedParams) ToCmd() *exec.Cmd {
 	}
 	args = append(args, "-profile")
 	args = append(args, p.Profile)
-	return exec.Command("iped", args...)
+	return exec.Command("iped", args...), nil
 }
 
 func (p *IpedParams) Validate(ve *helpers.ValidationError) {

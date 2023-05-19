@@ -1,6 +1,7 @@
 package ftkimager
 
 import (
+	"fmt"
 	"log"
 	"os/exec"
 	"path/filepath"
@@ -16,15 +17,23 @@ type FtkimagerParams struct {
 	Format      string `json:"format"`
 }
 
-func (p *FtkimagerParams) ToCmd() *exec.Cmd {
-	args := []string{p.Disk, p.Destination}
+func (p *FtkimagerParams) ToCmd() (*exec.Cmd, error) {
+	disks, err := GetDisks()
+	if err != nil {
+		return nil, err
+	}
+	if !helpers.SliceContains(disks, p.Disk) {
+		return nil, fmt.Errorf("disco %q não encontrado", p.Disk)
+	}
+	parts := strings.Split(p.Disk, " ")
+	args := []string{parts[0], p.Destination}
 	if p.Format == "e01" {
 		args = append(args, "--e01")
 	}
 	if p.Verify {
 		args = append(args, "--verify")
 	}
-	return exec.Command("ftkimager", args...)
+	return exec.Command("ftkimager", args...), nil
 }
 
 func (p *FtkimagerParams) Validate(ve *helpers.ValidationError) {

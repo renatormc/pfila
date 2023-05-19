@@ -38,6 +38,7 @@ func main() {
 	defer outfile.Close()
 	cmd, err := processes.GetCmd(proc)
 	if err != nil {
+		outfile.WriteString(err.Error())
 		log.Fatal(err)
 	}
 	cmd.Stderr = outfile

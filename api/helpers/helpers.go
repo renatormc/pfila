@@ -22,7 +22,6 @@ func GetProcess(pid int32, startTime time.Time) (*process.Process, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	createTime, err := p.CreateTime()
 	if err != nil {
 		return nil, err

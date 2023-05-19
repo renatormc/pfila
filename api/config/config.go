@@ -27,6 +27,14 @@ func GetConfig() Config {
 	return *config
 }
 
+func directoryExists(path string) bool {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return info.IsDir()
+}
+
 func LoadConfig() *Config {
 	ex, err := os.Executable()
 	if err != nil {
@@ -43,6 +51,11 @@ func LoadConfig() *Config {
 	}
 	if _, err := toml.DecodeFile(filepath.Join(config.AppDir, "pfila.toml"), config); err != nil {
 		log.Fatal(err)
+	}
+	if !directoryExists(config.ConsoleFolder) {
+		if err := os.MkdirAll(config.ConsoleFolder, os.ModePerm); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	return config

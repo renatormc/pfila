@@ -11,7 +11,7 @@ import (
 )
 
 type Params interface {
-	ToCmd() *exec.Cmd
+	ToCmd() (*exec.Cmd, error)
 	Validate(*helpers.ValidationError)
 }
 
@@ -36,5 +36,5 @@ func GetCmd(proc *models.Process) (*exec.Cmd, error) {
 	if err != nil {
 		return nil, err
 	}
-	return pars.ToCmd(), nil
+	return pars.ToCmd()
 }

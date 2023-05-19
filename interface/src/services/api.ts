@@ -87,6 +87,5 @@ export const stopProcess = async (id: number): Promise<Process> => {
 
 export const procConsole = async (id: number): Promise<string> => {
     const resp = await axios.get<any>(`/api/proc-console/${id}`);
-    console.log(resp.data)
     return resp.data.console;
 }

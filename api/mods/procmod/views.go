@@ -3,6 +3,7 @@ package procmod
 import (
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -87,6 +88,15 @@ func QueueProc(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "interval server error"})
 		return
 	}
+	if err := processes.CheckProcesses(); err != nil {
+		log.Println(err)
+	}
+	m, err := repo.GetProcessById(int64(m.ID))
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "interval server error"})
+		return
+	}
 	c.JSON(http.StatusOK, SerializeProc(m))
 }
 
@@ -115,11 +125,9 @@ func GetProcConsole(c *gin.Context) {
 	if !ok {
 		return
 	}
-	// html := strings.ReplaceAll(processes.GetProcConsole(m, 20), "\n", "<br>")
-	// c.JSON(http.StatusOK, gin.H{"console": html})
-	// html := strings.ReplaceAll(processes.GetProcConsole(m, 20), "\n", "<br>")
-	log.Print(processes.GetProcConsole(m, 20))
-	c.JSON(http.StatusOK, gin.H{"console": processes.GetProcConsole(m, 20)})
+	text := strings.ReplaceAll(processes.GetProcConsole(m, 10), "\r\n", "\n")
+	text = strings.ReplaceAll(text, "\r", "\n")
+	c.JSON(http.StatusOK, gin.H{"console": text})
 }
 
 func GetDisks(c *gin.Context) {
