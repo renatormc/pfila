@@ -29,11 +29,10 @@ func Run(proc *models.Process) error {
 		return err
 	}
 	proc.Pid = cmd.Process.Pid
-	log.Println(proc.Pid)
-	err = cmd.Process.Release()
-	if err != nil {
-		return err
-	}
+	// err = cmd.Process.Release()
+	// if err != nil {
+	// 	return err
+	// }
 
 	proc.Start = time.Now()
 	proc.Status = "EXECUTANDO"

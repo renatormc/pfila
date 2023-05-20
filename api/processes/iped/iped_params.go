@@ -19,7 +19,10 @@ type IpedParams struct {
 }
 
 func (p *IpedParams) ToCmdWindows() (*exec.Cmd, error) {
-	args := []string{}
+	cf := config.GetConfig()
+	java := filepath.Join(cf.IpedFolder, "jre", "bin", "java.exe")
+	jar := filepath.Join(cf.IpedFolder, "iped.jar")
+	args := []string{"-jar", jar}
 	for _, src := range p.Sources {
 		args = append(args, "-d")
 		args = append(args, src)
@@ -31,7 +34,8 @@ func (p *IpedParams) ToCmdWindows() (*exec.Cmd, error) {
 	}
 	args = append(args, "-profile")
 	args = append(args, p.Profile)
-	return exec.Command("iped", args...), nil
+	args = append(args, "--nogui")
+	return exec.Command(java, args...), nil
 }
 
 func (p *IpedParams) ToCmdLinux() (*exec.Cmd, error) {
