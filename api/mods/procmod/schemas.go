@@ -8,6 +8,7 @@ import (
 	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/helpers"
 	"github.com/renatormc/pfila/api/processes"
+	"github.com/renatormc/pfila/api/utils"
 )
 
 type ProcSchemaDump struct {
@@ -22,6 +23,7 @@ type ProcSchemaDump struct {
 	Finish       string `json:"finish"`
 	Status       string `json:"status"`
 	RandomID     string `json:"random_id"`
+	Dependencies string `json:"dependencies"`
 	Params       string `json:"params"`
 }
 
@@ -37,6 +39,7 @@ func SerializeProc(p *models.Process) ProcSchemaDump {
 		Start:        helpers.SerializeTime(p.Start),
 		StartWaiting: helpers.SerializeTime(p.StartWaiting),
 		Finish:       helpers.SerializeTime(p.Finish),
+		Dependencies: utils.SplitToString(p.GetDependencies(), ","),
 	}
 	return schema
 }
@@ -51,10 +54,11 @@ func SerializeManyProc(mds []models.Process) []ProcSchemaDump {
 }
 
 type ProcSchemaLoad struct {
-	Type   string
-	Name   string
-	User   string
-	Params string
+	Type         string `json:"type"`
+	Name         string `json:"name"`
+	User         string `json:"user"`
+	Dependencies string `json:"dependencies"`
+	Params       string `json:"params"`
 }
 
 func (pl *ProcSchemaLoad) Fill(m *models.Process) *helpers.ValidationError {
@@ -71,6 +75,20 @@ func (pl *ProcSchemaLoad) Fill(m *models.Process) *helpers.ValidationError {
 	if m.User == "" {
 		ve.AddMessage("user", "Campo obrigatório")
 	}
+
+	text := strings.TrimSpace(pl.Dependencies)
+	if text != "" {
+		parts := strings.Split(pl.Dependencies, ",")
+		vals, err := utils.StringSlice2UintSlice(parts)
+		if err != nil {
+			ve.AddMessage("dependencies", "Valor incorreto")
+		} else {
+			m.SetDependencies(vals)
+		}
+	} else {
+		m.SetDependencies([]uint{})
+	}
+
 	m.Params = pl.Params
 	pars, err := processes.GetParams(m)
 	if err != nil {

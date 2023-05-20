@@ -8,6 +8,7 @@ import (
 
 	"github.com/renatormc/pfila/api/config"
 	"github.com/renatormc/pfila/api/database/models"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

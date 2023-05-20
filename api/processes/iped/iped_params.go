@@ -6,6 +6,7 @@ import (
 
 	"github.com/renatormc/pfila/api/config"
 	"github.com/renatormc/pfila/api/helpers"
+	"github.com/renatormc/pfila/api/utils"
 )
 
 type IpedParams struct {
@@ -32,18 +33,18 @@ func (p *IpedParams) ToCmd() (*exec.Cmd, error) {
 }
 
 func (p *IpedParams) Validate(ve *helpers.ValidationError) {
-	if !helpers.DirectoryExists(p.Destination) {
+	if !utils.DirectoryExists(p.Destination) {
 		ve.AddMessage("destination", "Diretório não encontrado")
 	}
 	for _, src := range p.Sources {
-		if !helpers.DirectoryExists(src) || !helpers.FileExists(src) {
+		if !utils.DirectoryExists(src) || !utils.FileExists(src) {
 			ve.AddMessage("sources", "Fonte não encontrada")
 			break
 		}
 	}
 	cf := config.GetConfig()
 	path := filepath.Join(cf.IpedProfileFolder, p.Profile)
-	if !helpers.DirectoryExists(path) {
+	if !utils.DirectoryExists(path) {
 		ve.AddMessage("profile", "Perfil não encontrado")
 	}
 }

@@ -2,7 +2,12 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
+	"strconv"
+	"strings"
 	"time"
+
+	"github.com/renatormc/pfila/api/utils"
 )
 
 type Process struct {
@@ -18,6 +23,7 @@ type Process struct {
 	Status       string
 	RandomID     string
 	Params       string
+	Dependencies string
 }
 
 func (Process) TableName() string {
@@ -41,12 +47,32 @@ func (proc *Process) GetParams(v any) error {
 	return nil
 }
 
-type Dependency struct {
-	ID        uint `gorm:"primarykey"`
-	BlockedID uint
-	BlockerID uint
+func (proc *Process) GetDependencies() []uint {
+	ret := []uint{}
+	if proc.Dependencies == "" {
+		return ret
+	}
+	text := proc.Dependencies[1 : len(proc.Dependencies)-1]
+	parts := strings.Split(text, ",")
+	for _, p := range parts {
+		v, err := strconv.ParseUint(p, 10, 32)
+		if err == nil {
+			ret = append(ret, uint(v))
+		}
+	}
+	return ret
 }
 
-func (Dependency) TableName() string {
-	return "dependency"
+func (proc *Process) SetDependencies(deps []uint) {
+	proc.Dependencies = fmt.Sprintf(",%s,", utils.SplitToString(deps, ","))
 }
+
+// type Dependency struct {
+// 	ID        uint `gorm:"primarykey"`
+// 	BlockedID uint
+// 	BlockerID uint
+// }
+
+// func (Dependency) TableName() string {
+// 	return "dependency"
+// }

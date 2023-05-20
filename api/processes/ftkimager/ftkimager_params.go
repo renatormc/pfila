@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/renatormc/pfila/api/helpers"
+	"github.com/renatormc/pfila/api/utils"
 )
 
 type FtkimagerParams struct {
@@ -22,7 +23,7 @@ func (p *FtkimagerParams) ToCmd() (*exec.Cmd, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !helpers.SliceContains(disks, p.Disk) {
+	if !utils.SliceContains(disks, p.Disk) {
 		return nil, fmt.Errorf("disco %q não encontrado", p.Disk)
 	}
 	parts := strings.Split(p.Disk, " ")
@@ -43,7 +44,7 @@ func (p *FtkimagerParams) Validate(ve *helpers.ValidationError) {
 		ve.AddMessage("internal", "internal error")
 		return
 	}
-	if !helpers.SliceContains(disks, p.Disk) {
+	if !utils.SliceContains(disks, p.Disk) {
 		ve.AddMessage("disk", "Disco não encontrado")
 	}
 	dest := strings.TrimSpace(p.Destination)
@@ -51,7 +52,7 @@ func (p *FtkimagerParams) Validate(ve *helpers.ValidationError) {
 		ve.AddMessage("destination", "Campo obrigatório")
 	} else {
 		folder := filepath.Dir(dest)
-		if !filepath.IsAbs(folder) || !helpers.DirectoryExists(folder) {
+		if !filepath.IsAbs(folder) || !utils.DirectoryExists(folder) {
 			ve.AddMessage("destination", "Caminho inválido")
 		}
 	}

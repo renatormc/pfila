@@ -60,7 +60,7 @@ func main() {
 		outfile.WriteString(fmt.Sprintf("Process of id %d not found", *id))
 		log.Fatalf("Process of id %d not found", *id)
 	}
-	proc.Status = "FINISHED"
+	proc.Status = "FINALIZADO"
 	proc.Finish = time.Now()
 	repo.SaveProc(proc)
 
