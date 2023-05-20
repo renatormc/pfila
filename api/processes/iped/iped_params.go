@@ -36,7 +36,7 @@ func (p *IpedParams) ToCmdWindows() (*exec.Cmd, error) {
 
 func (p *IpedParams) ToCmdLinux() (*exec.Cmd, error) {
 	cf := config.GetConfig()
-	args := []string{"run", "--rm", "-it"}
+	args := []string{"run", "--rm"}
 	args = append(args, "-v")
 	args = append(args, fmt.Sprintf("%s://opt/IPED/iped-4.1.1/profiles", cf.IpedFolder))
 	for _, src := range p.Sources {
@@ -76,8 +76,11 @@ func (p *IpedParams) Validate(ve *helpers.ValidationError) {
 	if !utils.DirectoryExists(p.Destination) {
 		ve.AddMessage("destination", "Diretório não encontrado")
 	}
+	if len(p.Sources) == 0 {
+		ve.AddMessage("sources", "Campo obrigatório")
+	}
 	for _, src := range p.Sources {
-		if !utils.DirectoryExists(src) || !utils.FileExists(src) {
+		if !utils.DirectoryExists(src) && !utils.FileExists(src) {
 			ve.AddMessage("sources", "Fonte não encontrada")
 			break
 		}

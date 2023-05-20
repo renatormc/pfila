@@ -3,10 +3,12 @@ package procmod
 import (
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/renatormc/pfila/api/config"
 	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/database/repo"
 	"github.com/renatormc/pfila/api/helpers"
@@ -23,6 +25,7 @@ func ConfigRoutes(group *gin.RouterGroup) {
 	group.GET("/proc-console/:id", GetProcConsole)
 	group.DELETE("/proc/:id", DeleteProc)
 	group.GET("/disks", GetDisks)
+	group.GET("/iped-profiles", IpedProfiles)
 }
 
 func ListProcs(c *gin.Context) {
@@ -138,4 +141,22 @@ func GetDisks(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, disks)
+}
+
+func IpedProfiles(c *gin.Context) {
+	cf := config.GetConfig()
+	log.Println(cf.IpedProfileFolder)
+	entries, err := os.ReadDir(cf.IpedProfileFolder)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "interval server error"})
+		return
+	}
+	profiles := []string{}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			profiles = append(profiles, entry.Name())
+		}
+	}
+	c.JSON(http.StatusOK, profiles)
 }
