@@ -87,7 +87,48 @@ func GetProcConsole(proc *models.Process, nLines int) string {
 	return strings.TrimSpace(strings.Join(lines, "\n"))
 }
 
+func CheckWaintingDep() error {
+	db := database.GetDatabase()
+	procs := []models.Process{}
+	if err := db.Where("status = ?", "AGUARDANDO_DEP").Find(&procs).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+	}
+	deps := []models.Process{}
+	for _, proc := range procs {
+		if err := db.Find(&deps, proc.GetDependencies()).Error; err != nil {
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				return err
+			}
+		}
+		allFinished := true
+		for _, p := range deps {
+			if p.Status == "ERRO" {
+				proc.Status = "ERRO"
+				proc.Finish = time.Now().Local()
+				if err := db.Save(&proc).Error; err != nil {
+					return err
+				}
+				break
+			} else if p.Status != "FINALIZADO" {
+				allFinished = false
+			}
+		}
+		if allFinished {
+			proc.Status = "AGUARDANDO"
+			if err := db.Save(&proc).Error; err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func CheckProcesses() error {
+	if err := CheckWaintingDep(); err != nil {
+		return err
+	}
 
 	db := database.GetDatabase()
 	procs := []models.Process{}

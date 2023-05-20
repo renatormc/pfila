@@ -1,8 +1,10 @@
 package iped
 
 import (
+	"fmt"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 
 	"github.com/renatormc/pfila/api/config"
 	"github.com/renatormc/pfila/api/helpers"
@@ -16,7 +18,7 @@ type IpedParams struct {
 	Profile     string   `json:"profile"`
 }
 
-func (p *IpedParams) ToCmd() (*exec.Cmd, error) {
+func (p *IpedParams) ToCmdWindows() (*exec.Cmd, error) {
 	args := []string{}
 	for _, src := range p.Sources {
 		args = append(args, "-d")
@@ -30,6 +32,44 @@ func (p *IpedParams) ToCmd() (*exec.Cmd, error) {
 	args = append(args, "-profile")
 	args = append(args, p.Profile)
 	return exec.Command("iped", args...), nil
+}
+
+func (p *IpedParams) ToCmdLinux() (*exec.Cmd, error) {
+	cf := config.GetConfig()
+	args := []string{"run", "--rm", "-it"}
+	args = append(args, "-v")
+	args = append(args, fmt.Sprintf("%s://opt/IPED/iped-4.1.1/profiles", cf.IpedFolder))
+	for _, src := range p.Sources {
+		args = append(args, "-v")
+		args = append(args, fmt.Sprintf("%s:/evidences%s", src, src))
+	}
+	args = append(args, "-v")
+	args = append(args, fmt.Sprintf("%s:/evidences%s", p.Destination, p.Destination))
+	args = append(args, "ipeddocker/iped:processor_4.1.1_3")
+	args = append(args, "java")
+	args = append(args, "-jar")
+	args = append(args, "iped.jar")
+	args = append(args, "--nogui")
+	for _, src := range p.Sources {
+		args = append(args, "-d")
+		args = append(args, fmt.Sprintf("/evidences%s", src))
+	}
+	args = append(args, "-o")
+	args = append(args, fmt.Sprintf("/evidences%s", p.Destination))
+
+	if p.Portable {
+		args = append(args, "--portable")
+	}
+	args = append(args, "-profile")
+	args = append(args, p.Profile)
+	return exec.Command("docker", args...), nil
+}
+
+func (p *IpedParams) ToCmd() (*exec.Cmd, error) {
+	if runtime.GOOS == "windows" {
+		return p.ToCmdWindows()
+	}
+	return p.ToCmdLinux()
 }
 
 func (p *IpedParams) Validate(ve *helpers.ValidationError) {
