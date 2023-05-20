@@ -11,8 +11,7 @@ type Props = {
 const Console = ({ proc, className }: Props) => {
     const [text, setText] = useState("")
     const ref = useRef<HTMLDivElement>(null)
-    const [autoUpdate, setAutoUpdate] = useState(false)
-
+    const [autoUpdate, setAutoUpdate] = useState(true)
     const load = async () => {
         if (proc) {
             const res = await api.procConsole(proc.id)

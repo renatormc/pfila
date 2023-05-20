@@ -96,7 +96,14 @@ function ProcessesPage() {
 
     useEffect(() => {
         load()
+        const timer = setInterval(async () => {
+            load()
+        }, 30000);
+        return () => {
+            clearInterval(timer)
+        }
     }, [])
+
 
 
     return (

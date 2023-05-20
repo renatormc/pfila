@@ -89,3 +89,8 @@ export const procConsole = async (id: number): Promise<string> => {
     const resp = await axios.get<any>(`/api/proc-console/${id}`);
     return resp.data.console;
 }
+
+export const getIpdeProfiles = async (): Promise<string[]> => {
+    const resp = await axios.get<string[]>(`/api/iped-profiles`);
+    return resp.data;
+}
