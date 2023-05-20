@@ -11,9 +11,6 @@ import FormField from "~/components/FormField";
 import { AxiosError } from "axios";
 import WaitingModal from "~/components/WaitingModal";
 import Console from "./Console";
-import { spawn } from "child_process";
-
-
 
 function ProcessesPage() {
     const [procs, setProcs] = useState<Process[]>([])
@@ -138,6 +135,9 @@ function ProcessesPage() {
                                 <th scope="col" className="px-6 py-3">
                                     Tipo
                                 </th>
+                                <th scope="col " className="px-6 py-3">
+                                    Dependências
+                                </th>
                                 <th scope="col" className="px-6 py-3">
                                     Status
                                 </th>
@@ -175,6 +175,9 @@ function ProcessesPage() {
                                     <td className="px-6 py-4">
                                         {proc.type}
                                     </td>
+                                    <td className="px-6 py-4 text-center">
+                                        {proc.dependencies}
+                                    </td>
                                     <td className="px-6 py-4">
                                         {proc.status}
                                     </td>
@@ -196,7 +199,7 @@ function ProcessesPage() {
             <div className="fixed bottom-16 h-80 w-full px-2">
                 <Console className="w-full h-full" proc={selectedProc} />
             </div>
-            <Modal className="bg-white w-full max-w-2xl h-fit p-5 rounded-sm pt-8" show={editingProc != null} onToggleShow={() => { setEditingProc(null) }}>
+            <Modal className="bg-white w-full max-w-2xl h-fit p-5 rounded-sm pt-8 max-h-screen overflow-auto" show={editingProc != null} onToggleShow={() => { setEditingProc(null) }}>
                 <div className="flex flex-col">
                     <div className="flex flex-col gap-2">
                         <p className="mb-2 text-blue-600 text-xl">Novo processo</p>
@@ -205,6 +208,10 @@ function ProcessesPage() {
                         </FormField>
                         <FormField label='Usuário' errors={errors.user}>
                             <Input className="w-full" value={editingProc?.user} onChange={(v) => { updateField('user', v) }} />
+                        </FormField>
+                        <FormField label='Dependências' errors={errors.dependencies} >
+                            <Input className="w-full" value={editingProc?.dependencies} onChange={(v) => { updateField('dependencies', v) }}
+                                placeholder="Dependências separadas por vírgula" />
                         </FormField>
 
                         {editingProc && <SwitchProc ptype={editingProc.type}
