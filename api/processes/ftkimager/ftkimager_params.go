@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/helpers"
 	"github.com/renatormc/pfila/api/utils"
 )
@@ -18,7 +19,11 @@ type FtkimagerParams struct {
 	Format      string `json:"format"`
 }
 
-func (p *FtkimagerParams) ToCmd() (*exec.Cmd, error) {
+func (FtkimagerParams) IsDocker() bool {
+	return false
+}
+
+func (p *FtkimagerParams) ToCmd(proc *models.Process) (*exec.Cmd, error) {
 	disks, err := GetDisks()
 	if err != nil {
 		return nil, err

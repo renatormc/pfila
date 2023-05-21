@@ -1,7 +1,6 @@
 package procmod
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -96,8 +95,8 @@ func (pl *ProcSchemaLoad) Fill(m *models.Process) *helpers.ValidationError {
 		ve.AddMessage("internal", "erro interno")
 		return ve
 	}
+	m.IsDocker = pars.IsDocker()
 	pars.Validate(ve)
-	fmt.Println(ve.Messages)
 	if len(ve.Messages) > 0 {
 		return ve
 	}

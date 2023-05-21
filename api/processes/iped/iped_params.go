@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/renatormc/pfila/api/config"
+	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/helpers"
 	"github.com/renatormc/pfila/api/utils"
 )
@@ -16,6 +17,10 @@ type IpedParams struct {
 	Sources     []string `json:"sources"`
 	Portable    bool     `json:"portable"`
 	Profile     string   `json:"profile"`
+}
+
+func (IpedParams) IsDocker() bool {
+	return runtime.GOOS != "windows"
 }
 
 func (p *IpedParams) ToCmdWindows() (*exec.Cmd, error) {
@@ -38,9 +43,9 @@ func (p *IpedParams) ToCmdWindows() (*exec.Cmd, error) {
 	return exec.Command(java, args...), nil
 }
 
-func (p *IpedParams) ToCmdLinux() (*exec.Cmd, error) {
+func (p *IpedParams) ToCmdLinux(proc *models.Process) (*exec.Cmd, error) {
 	cf := config.GetConfig()
-	args := []string{"run", "--rm"}
+	args := []string{"run", "--name", proc.RandomID, "--rm"}
 	args = append(args, "-v")
 	args = append(args, fmt.Sprintf("%s://opt/IPED/iped-4.1.1/profiles", cf.IpedFolder))
 	for _, src := range p.Sources {
@@ -69,11 +74,11 @@ func (p *IpedParams) ToCmdLinux() (*exec.Cmd, error) {
 	return exec.Command("docker", args...), nil
 }
 
-func (p *IpedParams) ToCmd() (*exec.Cmd, error) {
+func (p *IpedParams) ToCmd(proc *models.Process) (*exec.Cmd, error) {
 	if runtime.GOOS == "windows" {
 		return p.ToCmdWindows()
 	}
-	return p.ToCmdLinux()
+	return p.ToCmdLinux(proc)
 }
 
 func (p *IpedParams) Validate(ve *helpers.ValidationError) {
@@ -84,8 +89,9 @@ func (p *IpedParams) Validate(ve *helpers.ValidationError) {
 		ve.AddMessage("sources", "Campo obrigatório")
 	}
 	for _, src := range p.Sources {
-		if !utils.DirectoryExists(src) && !utils.FileExists(src) {
-			ve.AddMessage("sources", "Fonte não encontrada")
+		parent := filepath.Dir(src)
+		if !utils.DirectoryExists(parent) {
+			ve.AddMessage("sources", "Diretório não encontrado")
 			break
 		}
 	}

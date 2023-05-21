@@ -29,10 +29,10 @@ func Run(proc *models.Process) error {
 		return err
 	}
 	proc.Pid = cmd.Process.Pid
-	// err = cmd.Process.Release()
-	// if err != nil {
-	// 	return err
-	// }
+	err = cmd.Process.Release()
+	if err != nil {
+		return err
+	}
 
 	proc.Start = time.Now()
 	proc.Status = "EXECUTANDO"
@@ -58,6 +58,12 @@ func StopProcess(proc *models.Process) error {
 		return err
 	}
 
+	if proc.IsDocker {
+		err := exec.Command("docker", "stop", proc.RandomID).Run()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

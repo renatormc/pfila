@@ -11,8 +11,9 @@ import (
 )
 
 type Params interface {
-	ToCmd() (*exec.Cmd, error)
+	ToCmd(*models.Process) (*exec.Cmd, error)
 	Validate(*helpers.ValidationError)
+	IsDocker() bool
 }
 
 func GetParams(proc *models.Process) (Params, error) {
@@ -36,5 +37,5 @@ func GetCmd(proc *models.Process) (*exec.Cmd, error) {
 	if err != nil {
 		return nil, err
 	}
-	return pars.ToCmd()
+	return pars.ToCmd(proc)
 }

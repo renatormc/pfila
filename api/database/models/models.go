@@ -24,6 +24,7 @@ type Process struct {
 	RandomID     string
 	Params       string
 	Dependencies string
+	IsDocker     bool
 }
 
 func (Process) TableName() string {
@@ -66,13 +67,3 @@ func (proc *Process) GetDependencies() []uint {
 func (proc *Process) SetDependencies(deps []uint) {
 	proc.Dependencies = fmt.Sprintf(",%s,", utils.SplitToString(deps, ","))
 }
-
-// type Dependency struct {
-// 	ID        uint `gorm:"primarykey"`
-// 	BlockedID uint
-// 	BlockerID uint
-// }
-
-// func (Dependency) TableName() string {
-// 	return "dependency"
-// }
