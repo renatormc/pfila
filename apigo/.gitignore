@@ -1,0 +1,6 @@
+dist/pfila
+dist/pfila_runner
+dist/pfila.exe
+dist/pfila_runner.exe
+dist/pfila.db
+dist/pfila.toml
