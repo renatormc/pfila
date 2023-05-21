@@ -2,7 +2,6 @@ package iped
 
 import (
 	"fmt"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 
@@ -23,11 +22,11 @@ func (IpedParams) IsDocker() bool {
 	return runtime.GOOS != "windows"
 }
 
-func (p *IpedParams) ToCmdWindows() (*exec.Cmd, error) {
+func (p *IpedParams) ToCmdWindows() ([]string, error) {
 	cf := config.GetConfig()
 	java := filepath.Join(cf.IpedFolder, "jre", "bin", "java.exe")
 	jar := filepath.Join(cf.IpedFolder, "iped.jar")
-	args := []string{"-jar", jar}
+	args := []string{java, "-jar", jar}
 	for _, src := range p.Sources {
 		args = append(args, "-d")
 		args = append(args, src)
@@ -40,12 +39,12 @@ func (p *IpedParams) ToCmdWindows() (*exec.Cmd, error) {
 	args = append(args, "-profile")
 	args = append(args, p.Profile)
 	args = append(args, "--nogui")
-	return exec.Command(java, args...), nil
+	return args, nil
 }
 
-func (p *IpedParams) ToCmdLinux(proc *models.Process) (*exec.Cmd, error) {
+func (p *IpedParams) ToCmdLinux(proc *models.Process) ([]string, error) {
 	cf := config.GetConfig()
-	args := []string{"run", "--name", proc.RandomID, "--rm"}
+	args := []string{"docker", "run", "--name", proc.RandomID, "--rm"}
 	args = append(args, "-v")
 	args = append(args, fmt.Sprintf("%s://opt/IPED/iped-4.1.1/profiles", cf.IpedFolder))
 	for _, src := range p.Sources {
@@ -71,10 +70,10 @@ func (p *IpedParams) ToCmdLinux(proc *models.Process) (*exec.Cmd, error) {
 	}
 	args = append(args, "-profile")
 	args = append(args, p.Profile)
-	return exec.Command("docker", args...), nil
+	return args, nil
 }
 
-func (p *IpedParams) ToCmd(proc *models.Process) (*exec.Cmd, error) {
+func (p *IpedParams) ToCmdArgs(proc *models.Process) ([]string, error) {
 	if runtime.GOOS == "windows" {
 		return p.ToCmdWindows()
 	}

@@ -22,8 +22,14 @@ import (
 )
 
 func Run(proc *models.Process) error {
+	args, err := processes.GetCmdArgs(proc)
+	if err != nil {
+		outfile.WriteString(err.Error())
+		log.Fatal(err)
+	}
+
 	cf := config.GetConfig()
-	cmd := exec.Command(filepath.Join(cf.AppDir, "pfila_runner"), "-p", fmt.Sprintf("%d", proc.ID))
+	cmd := exec.Command("python", filepath.Join(cf.AppDir, "runner.py"), "-p", fmt.Sprintf("%d", proc.ID))
 	err := cmd.Start()
 	if err != nil {
 		return err

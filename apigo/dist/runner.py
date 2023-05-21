@@ -1,9 +1,11 @@
 import subprocess
 from pathlib import Path
+import sys
 
-args = ["D:\\tests\\pfila\\iped\\iped-4.1.2\\jre\\bin\\java.exe", "-jar",
-        "D:\\tests\\pfila\\iped\\iped-4.1.2\\iped.jar", "-profile", "fastmode",
-        "-d", "D:\\tests\\pfila\\pen.E01", "-o", "D:\\tests\\pfila\\result", "--nogui"]
-path = Path(r'D:\tests\pfila\console\output.txt')
+path = Path(sys.argv[1])
 with path.open('w') as f:
-    subprocess.run(args,  stdout=f, stderr=subprocess.STDOUT)
+    try:
+        subprocess.check_call(sys.argv[2:],  stdout=f, stderr=subprocess.STDOUT)
+        f.write(f"\n#pfilaok#")
+    except:
+        f.write(f"\n#pfilaerro#")

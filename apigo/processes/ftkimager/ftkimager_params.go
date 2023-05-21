@@ -3,7 +3,6 @@ package ftkimager
 import (
 	"fmt"
 	"log"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -23,7 +22,7 @@ func (FtkimagerParams) IsDocker() bool {
 	return false
 }
 
-func (p *FtkimagerParams) ToCmd(proc *models.Process) (*exec.Cmd, error) {
+func (p *FtkimagerParams) ToCmdArgs(proc *models.Process) ([]string, error) {
 	disks, err := GetDisks()
 	if err != nil {
 		return nil, err
@@ -32,14 +31,14 @@ func (p *FtkimagerParams) ToCmd(proc *models.Process) (*exec.Cmd, error) {
 		return nil, fmt.Errorf("disco %q não encontrado", p.Disk)
 	}
 	parts := strings.Split(p.Disk, " ")
-	args := []string{parts[0], p.Destination}
+	args := []string{"ftkimager", parts[0], p.Destination}
 	if p.Format == "e01" {
 		args = append(args, "--e01")
 	}
 	if p.Verify {
 		args = append(args, "--verify")
 	}
-	return exec.Command("ftkimager", args...), nil
+	return args, nil
 }
 
 func (p *FtkimagerParams) Validate(ve *helpers.ValidationError) {

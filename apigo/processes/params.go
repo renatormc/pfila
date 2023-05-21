@@ -2,7 +2,6 @@ package processes
 
 import (
 	"fmt"
-	"os/exec"
 
 	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/helpers"
@@ -11,7 +10,7 @@ import (
 )
 
 type Params interface {
-	ToCmd(*models.Process) (*exec.Cmd, error)
+	ToCmdArgs(*models.Process) ([]string, error)
 	Validate(*helpers.ValidationError)
 	IsDocker() bool
 }
@@ -32,10 +31,10 @@ func GetParams(proc *models.Process) (Params, error) {
 	return pars, nil
 }
 
-func GetCmd(proc *models.Process) (*exec.Cmd, error) {
+func GetCmdArgs(proc *models.Process) ([]string, error) {
 	pars, err := GetParams(proc)
 	if err != nil {
 		return nil, err
 	}
-	return pars.ToCmd(proc)
+	return pars.ToCmdArgs(proc)
 }
