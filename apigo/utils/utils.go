@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -60,4 +61,36 @@ func StringSlice2UintSlice(a []string) ([]uint, error) {
 		b[i] = uint(aux)
 	}
 	return b, nil
+}
+
+func ReadTail(filePath string, limit int) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return "", err
+	}
+	fileSize := fileInfo.Size()
+
+	offset := fileSize - int64(limit)
+	if offset < 0 {
+		offset = 0
+	}
+
+	_, err = file.Seek(offset, io.SeekStart)
+	if err != nil {
+		return "", err
+	}
+
+	buffer := make([]byte, limit)
+	_, err = file.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+
+	return string(buffer), nil
 }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/renatormc/pfila/api/config"
 	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/database/repo"
@@ -41,6 +42,7 @@ func CreateProc(c *gin.Context) {
 	}
 
 	m.CreatedAt = time.Now().Local()
+	m.RandomID = uuid.NewString()
 	m.Finish = time.Time{}
 	m.Status = "ADICIONADO"
 	if !helpers.SaveModel(c, &m) {

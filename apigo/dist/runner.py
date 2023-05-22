@@ -8,4 +8,4 @@ with path.open('w') as f:
         subprocess.check_call(sys.argv[2:],  stdout=f, stderr=subprocess.STDOUT)
         f.write(f"\n#pfilaok#")
     except:
-        f.write(f"\n#pfilaerro#")
+        f.write(f"\n#pfilaerror#")
