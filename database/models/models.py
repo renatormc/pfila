@@ -13,6 +13,7 @@ class Process(Base):
     pid: Mapped[int | None] = mapped_column(sa.Integer)
     created_at: Mapped[datetime | None] = mapped_column(sa.DateTime)
     started_at: Mapped[datetime | None] = mapped_column(sa.DateTime)
+    started_waiting_at: Mapped[datetime | None] = mapped_column(sa.DateTime)
     finished_at: Mapped[datetime | None] = mapped_column(sa.DateTime)
     status: Mapped[str] = mapped_column(sa.String(150))
     random_id: Mapped[str] = mapped_column(sa.String(150))
