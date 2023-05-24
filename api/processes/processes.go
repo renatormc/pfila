@@ -42,17 +42,14 @@ func WriteErrorToConsole(err error, proc *models.Process) error {
 
 func Run(proc *models.Process) error {
 	cf := config.GetConfig()
-	outfile := filepath.Join(cf.ConsoleFolder, proc.RandomID)
-	args, err := GetCmdArgs(proc)
+	cmd := exec.Command(filepath.Join(cf.AppDir, "pfila_worker"), "-p", fmt.Sprintf("%d", proc.ID))
+	err := cmd.Start()
 	if err != nil {
-		return WriteErrorToConsole(err, proc)
+		return err
 	}
-
-	argsFull := append([]string{filepath.Join(cf.AppDir, "runner.py"), outfile}, args...)
-	cmd := exec.Command("python", argsFull...)
-	err = cmd.Start()
+	err = cmd.Process.Release()
 	if err != nil {
-		return WriteErrorToConsole(err, proc)
+		return err
 	}
 	proc.Pid = cmd.Process.Pid
 	err = cmd.Process.Release()

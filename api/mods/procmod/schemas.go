@@ -38,6 +38,7 @@ func SerializeProc(p *models.Process) ProcSchemaDump {
 		Start:        helpers.SerializeTime(p.Start),
 		StartWaiting: helpers.SerializeTime(p.StartWaiting),
 		Finish:       helpers.SerializeTime(p.Finish),
+		RandomID:     p.RandomID,
 		Dependencies: utils.SplitToString(p.GetDependencies(), ","),
 	}
 	return schema

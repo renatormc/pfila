@@ -26,6 +26,7 @@ export interface Process {
     start_waiting: string;
     finish: string;
     status: string;
+    random_id: string;
     dependencies: string;
     params: ProcParams
 }
@@ -81,6 +82,7 @@ export function getDefaultProcess(ptype: ProcType): Process {
         start_waiting: "",
         finish: "",
         status: "ADDED",
+        random_id: "",
         dependencies: "",
         params: pars
     }

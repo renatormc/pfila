@@ -232,7 +232,11 @@ function ProcessesPage() {
                 </div>
             </Modal>
             <Modal className="bg-gray-700 text-gray-50 w-full max-w-2xl h-fit p-5 rounded-sm pt-8 shadow-2xl" show={showingProc != null} onToggleShow={() => { setShowingProc(null) }}>
-                <pre>{JSON.stringify(showingProc?.params, undefined, 2)}</pre>
+                <div>
+                    <p className="mb-3 text-azul-200 font-bold">{showingProc?.random_id}</p>
+                    <pre>{JSON.stringify(showingProc?.params, undefined, 2)}</pre>
+                </div>
+
             </Modal>
             <WaitingModal message={loadingParams ? 'carregando' : ''} />
         </div>
