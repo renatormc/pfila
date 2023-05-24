@@ -40,33 +40,33 @@ func WriteErrorToConsole(err error, proc *models.Process) error {
 	return nil
 }
 
-func Run(proc *models.Process) error {
-	cf := config.GetConfig()
-	cmd := exec.Command(filepath.Join(cf.AppDir, "pfila_worker"), "-p", fmt.Sprintf("%d", proc.ID))
-	err := cmd.Start()
-	if err != nil {
-		return err
-	}
-	err = cmd.Process.Release()
-	if err != nil {
-		return err
-	}
-	proc.Pid = cmd.Process.Pid
-	err = cmd.Process.Release()
-	if err != nil {
-		log.Fatal(err)
-	}
+// func Run(proc *models.Process) error {
+// 	cf := config.GetConfig()
+// 	cmd := exec.Command(filepath.Join(cf.AppDir, "pfila_worker"), "-p", fmt.Sprintf("%d", proc.ID))
+// 	err := cmd.Start()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	err = cmd.Process.Release()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	proc.Pid = cmd.Process.Pid
+// 	err = cmd.Process.Release()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	proc.Start = time.Now()
-	proc.Status = "EXECUTANDO"
+// 	proc.Start = time.Now()
+// 	proc.Status = "EXECUTANDO"
 
-	db := database.GetDatabase()
-	err = db.Save(&proc).Error
-	if err != nil {
-		log.Fatal(err)
-	}
-	return nil
-}
+// 	db := database.GetDatabase()
+// 	err = db.Save(&proc).Error
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	return nil
+// }
 
 func StopProcess(proc *models.Process) error {
 	p, err := helpers.GetProcess(int32(proc.Pid), proc.Start)
@@ -219,6 +219,7 @@ func CheckProcesses() error {
 	}
 	if len(procs) == 0 {
 		proc := models.Process{}
+
 		err := db.Where("status = ?", "AGUARDANDO").Order("start_waiting asc").First(&proc).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -226,7 +227,12 @@ func CheckProcesses() error {
 			}
 			return err
 		}
-		return Run(&proc)
+		proc.Status = "PROXIMO"
+		err = repo.SaveProc(&proc)
+		if err != nil {
+			return err
+		}
+
 	}
 	return nil
 }
