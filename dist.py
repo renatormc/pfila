@@ -10,12 +10,18 @@ os.chdir(folder / "interface")
 os.system("npx vite build")
 
 dist_folder = folder / "dist"
-try:
-    shutil.rmtree(dist_folder)
-except FileNotFoundError:
-    pass
-dist_folder.mkdir()
+for entry in dist_folder.iterdir():
+    if entry.name == "tools":
+        continue
+    try:
+        if entry.is_dir():
+            shutil.rmtree(entry)
+        else:
+            entry.unlink()
+    except FileNotFoundError:
+        pass
 
 shutil.copy(folder / "api/dist/pfila.exe", dist_folder / "pfila.exe")
+shutil.copy(folder / "api/dist/update.exe", dist_folder / "update.exe")
 shutil.copy(folder / "api/dist/pfila.toml", dist_folder / "pfila.toml")
 shutil.copytree(folder / "api/dist/app", dist_folder / "app")

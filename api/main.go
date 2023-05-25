@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/akamensky/argparse"
@@ -15,6 +16,7 @@ import (
 	"github.com/renatormc/pfila/api/database"
 	"github.com/renatormc/pfila/api/mods/procmod"
 	"github.com/renatormc/pfila/api/processes"
+	"github.com/renatormc/pfila/api/utils"
 )
 
 func Test() {
@@ -30,6 +32,16 @@ func Test() {
 	}
 	if err := cmd.Wait(); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func ConfigPath() {
+	cf := config.GetConfig()
+	toolsDir := filepath.Join(cf.AppDir, "tools")
+	ftkimagerDir := filepath.Join(toolsDir, "ftkimager")
+	if runtime.GOOS == "windows" && utils.DirectoryExists(ftkimagerDir) {
+		newPath := os.Getenv("PATH") + string(os.PathListSeparator) + ftkimagerDir
+		os.Setenv("PATH", newPath)
 	}
 }
 
@@ -61,6 +73,7 @@ func Serve() {
 }
 
 func main() {
+	ConfigPath()
 	args := os.Args
 	if len(args) == 1 {
 		args = append(args, "serve")

@@ -18,6 +18,7 @@ type Config struct {
 	Secret            string `toml:"secret"`
 	IpedFolder        string `toml:"iped_folder"`
 	IpedProfileFolder string `toml:"iped_profile_folder"`
+	Env               string `toml:"env"`
 }
 
 func GetConfig() Config {

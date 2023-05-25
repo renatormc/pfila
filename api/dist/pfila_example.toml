@@ -1,7 +1,20 @@
-# Pasta onde serão gravados a saida dos processos
+# Ambiente. Se é dev ou prod. dev é para desenvolvimento, prod é para produção
+env = "prod"
+
+# Uma pasta que será utilizada para gravar os arquivos de saida stdout e stderr dos processos
 console_folder = "/home/user/temp"
+
+# Por na qual a api irá rodar
 port = "8000"
+
+# Se é para exigir autenticação ou não. Para uso local não é necessário e também não está implementado esse recurso ainda. É para uso futuro
 check_auth = false
+
+# Chave secreta a ser utilizada nos tokens de acesso. Para uso futuro apenas
 secret = ""
+
+#Pasta que contém o iped.jar
 iped_folder = ""
+
+# Pasta que contém os perfis do iped.
 iped_profile_folder = ""
