@@ -2,9 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-
 export default defineConfig({
   plugins: [react()],
+  base: '/static/',
   resolve: {
     alias: [
       { find: '~', replacement: path.resolve(__dirname, 'src') },
@@ -20,6 +20,6 @@ export default defineConfig({
     },
   },
   build: {
-    // outDir: `${mippaeHome}/apps/manager/app`
+    outDir: "../api/dist/app"
   }
 })
