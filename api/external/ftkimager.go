@@ -6,11 +6,14 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"github.com/renatormc/pfila/api/config"
 )
 
 func GetDisks() ([]string, error) {
 	disks := []string{}
-	cmd := exec.Command("ftkimager", "--list-drives")
+	cf := config.GetConfig()
+	cmd := exec.Command(cf.Ftkimager, "--list-drives")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Println(err)

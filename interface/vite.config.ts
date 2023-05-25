@@ -20,6 +20,6 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "../api/dist/app"
+    outDir: "../dist/app"
   }
 })

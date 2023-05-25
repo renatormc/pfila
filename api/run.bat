@@ -1,2 +1,2 @@
 @echo off
-build.bat && "%~dp0\dist\pfila.exe" %*
+build.bat && "%~dp0\..\dist\pfila.exe" %*

@@ -1,6 +1,3 @@
 .python-version
-pfila.toml
-pfile.db
 .venv
 test.py
-dist

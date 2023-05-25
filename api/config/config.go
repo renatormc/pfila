@@ -19,6 +19,7 @@ type Config struct {
 	IpedFolder        string `toml:"iped_folder"`
 	IpedProfileFolder string `toml:"iped_profile_folder"`
 	Env               string `toml:"env"`
+	Ftkimager         string `toml:"ftkimager"`
 }
 
 func GetConfig() Config {

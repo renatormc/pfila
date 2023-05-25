@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/renatormc/pfila/api/config"
 	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/external"
 	"github.com/renatormc/pfila/api/helpers"
@@ -33,7 +34,8 @@ func (p *FtkimagerParams) ToCmdArgs(proc *models.Process) ([]string, error) {
 		return nil, fmt.Errorf("disco %q não encontrado", p.Disk)
 	}
 	parts := strings.Split(p.Disk, " ")
-	args := []string{"ftkimager", parts[0], p.Destination}
+	cf := config.GetConfig()
+	args := []string{cf.Ftkimager, parts[0], p.Destination}
 	if p.Format == "e01" {
 		args = append(args, "--e01")
 	}

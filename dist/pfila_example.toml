@@ -18,3 +18,6 @@ iped_folder = ""
 
 # Pasta que contém os perfis do iped.
 iped_profile_folder = ""
+
+# Caminho para o executável do ftkimager de linha de comando
+ftkimager = "D:\\src\\sinftools\\extras\\ftkimager\\ftkimager.exe"
