@@ -67,7 +67,7 @@ const DropdownComponent = (props: Props) => {
                 {items.map((item, index) => {
                     return (
                         <li key={index} >
-                            <span className={`whitespace-nowrap block py-2 px-4 ${item.disabled ? 'text-azul-600' : 'text-azul-500 hover:bg-gray-100 cursor-pointer'}  text-left`} onClick={() => { onClickItem(index) }}>{item.text}</span>
+                            <span className={`whitespace-nowrap block py-2 px-4 ${item.disabled ? 'text-azul-200' : 'text-azul-500 hover:bg-gray-100 cursor-pointer'}  text-left`} onClick={() => { onClickItem(index) }}>{item.text}</span>
                         </li>
                     )
                 })}

@@ -98,7 +98,7 @@ function ProcessesPage() {
         load()
         const timer = setInterval(async () => {
             load()
-        }, 30000);
+        }, 5000);
         return () => {
             clearInterval(timer)
         }
@@ -196,10 +196,10 @@ function ProcessesPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <Dropdown.Group label="OP">
-                                            <Dropdown.Item text="Editar" onClick={() => { editProcess(index) }} />
-                                            <Dropdown.Item text="Colocar na fila" onClick={() => { queueProcess(index) }} />
-                                            <Dropdown.Item text="Deletar" onClick={() => { deleteProcess(index) }} />
-                                            <Dropdown.Item text="Cancelar" onClick={() => { cancelProcess(index) }} />
+                                            <Dropdown.Item text="Editar" onClick={() => { editProcess(index) }} disabled={proc.status == "EXECUTANDO"}/>
+                                            <Dropdown.Item text="Colocar na fila" onClick={() => { queueProcess(index) }} disabled={proc.status == "EXECUTANDO"}/>
+                                            <Dropdown.Item text="Deletar" onClick={() => { deleteProcess(index) }} disabled={proc.status == "EXECUTANDO"}/>
+                                            <Dropdown.Item text="Cancelar" onClick={() => { cancelProcess(index) }} disabled={proc.status != "EXECUTANDO"}/>
                                             <Dropdown.Item text="Ver parâmetros" onClick={() => { setShowingProc(procs[index]) }} />
                                         </Dropdown.Group>
                                     </td>
