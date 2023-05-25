@@ -57,56 +57,45 @@ func (w *Worker) PrepareNext() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	w.cmd = exec.Command(args[0], args[1:]...)
+	w.current = &CurrentProcess{
+		cmd:  exec.Command(args[0], args[1:]...),
+		proc: proc,
+	}
+
 }
 
 func (w *Worker) RunNext() {
+	if w.current == nil {
+		return
+	}
 	cf := config.GetConfig()
-	outfile, err := os.Create(filepath.Join(cf.ConsoleFolder, proc.RandomID))
+	outfile, err := os.Create(filepath.Join(cf.ConsoleFolder, w.current.proc.RandomID))
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer outfile.Close()
-	args, err := GetCmdArgs(&proc)
-	if err != nil {
-		outfile.WriteString(err.Error())
 		log.Println(err)
-	}
-	w.cmd.Stderr = os.Stderr
-	w.cmd.Stdout = os.Stdout
-	w.cmd.Stdin = os.Stdin
-	log.Printf("Starting %d\n", proc.ID)
-	if err := cmd.Start(); err != nil {
-		outfile.WriteString("\nPFila: Finalizou com erro")
-		proc, err := repo.GetProcessById(int64(proc.ID))
-		if err != nil {
-			outfile.WriteString(fmt.Sprintf("Process of id %d not found", proc.ID))
-			log.Printf("Process of id %d not found", proc.ID)
-			return
-		}
-		proc.Status = "ERRO"
-		proc.Finish = time.Now()
-		err = repo.SaveProc(proc)
-		if err != nil {
-			log.Fatal(err)
-		}
 		return
 	}
+	defer func() {
+		outfile.Close()
+		w.current = nil
+	}()
 
-	proc.Pid = cmd.Process.Pid
-	proc.Status = "EXECUTANDO"
-	proc.Start = time.Now()
-	err = repo.SaveProc(proc)
+	w.current.cmd.Stderr = outfile
+	w.current.cmd.Stdout = outfile
+	w.current.cmd.Stdin = os.Stdin
+
+	w.current.proc.Status = "EXECUTANDO"
+	w.current.proc.Start = time.Now()
+	err = repo.SaveProc(w.current.proc)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := cmd.Wait(); err != nil {
+	if err := w.current.cmd.Run(); err != nil {
 		outfile.WriteString("\nPFila: Finalizou com erro")
-		proc, err := repo.GetProcessById(int64(proc.ID))
+		proc, err := repo.GetProcessById(int64(w.current.proc.ID))
 		if err != nil {
-			outfile.WriteString(fmt.Sprintf("Process of id %d not found", proc.ID))
-			log.Printf("Process of id %d not found", proc.ID)
+			outfile.WriteString(fmt.Sprintf("Process of id %d not found", w.current.proc.ID))
+			log.Printf("Process of id %d not found", w.current.proc.ID)
 			return
 		}
 		proc.Status = "ERRO"
@@ -118,11 +107,10 @@ func (w *Worker) RunNext() {
 		return
 	}
 
-	proc, err = repo.GetProcessById(int64(proc.ID))
-
+	proc, err := repo.GetProcessById(int64(w.current.proc.ID))
 	if err != nil {
-		outfile.WriteString(fmt.Sprintf("Process of id %d not found", proc.ID))
-		log.Printf("Process of id %d not found", proc.ID)
+		outfile.WriteString(fmt.Sprintf("Process of id %d not found", w.current.proc.ID))
+		log.Printf("Process of id %d not found", w.current.proc.ID)
 		return
 	}
 	proc.Status = "FINALIZADO"
