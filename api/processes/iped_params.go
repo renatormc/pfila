@@ -1,4 +1,4 @@
-package iped
+package processes
 
 import (
 	"fmt"

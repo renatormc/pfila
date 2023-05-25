@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"github.com/akamensky/argparse"
@@ -36,6 +38,12 @@ func Serve() {
 	database.Migrate()
 	r := gin.Default()
 
+	r.GET("/", func(c *gin.Context) {
+		c.File(filepath.Join(cf.AppDir, "app", "index.html"))
+	})
+
+	r.Static("/static", filepath.Join(cf.AppDir, "app"))
+
 	api := r.Group("/api")
 	procmod.ConfigRoutes(api)
 
@@ -53,11 +61,15 @@ func Serve() {
 }
 
 func main() {
+	args := os.Args
+	if len(args) == 1 {
+		args = append(args, "serve")
+	}
 	parser := argparse.NewParser("PFila", "PFila")
 	serveCmd := parser.NewCommand("serve", "Start server")
 	testCmd := parser.NewCommand("test", "Run test function")
 
-	err := parser.Parse(os.Args)
+	err := parser.Parse(args)
 	if err != nil {
 		fmt.Print(parser.Usage(err))
 		return
@@ -68,7 +80,12 @@ func main() {
 	case testCmd.Happened():
 		Test()
 	case serveCmd.Happened():
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("Press any key to exit.")
+				bufio.NewReader(os.Stdin).ReadBytes('\n')
+			}
+		}()
 		Serve()
 	}
-
 }

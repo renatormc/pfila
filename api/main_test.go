@@ -5,11 +5,11 @@ import (
 	"log"
 	"testing"
 
-	"github.com/renatormc/pfila/api/processes/ftkimager"
+	"github.com/renatormc/pfila/api/external"
 )
 
 func TestMain(t *testing.T) {
-	disks, err := ftkimager.GetDisks()
+	disks, err := external.GetDisks()
 	if err != nil {
 		log.Fatal(err)
 	}

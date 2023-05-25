@@ -12,9 +12,9 @@ import (
 	"github.com/renatormc/pfila/api/config"
 	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/database/repo"
+	"github.com/renatormc/pfila/api/external"
 	"github.com/renatormc/pfila/api/helpers"
 	"github.com/renatormc/pfila/api/processes"
-	"github.com/renatormc/pfila/api/processes/ftkimager"
 )
 
 func ConfigRoutes(group *gin.RouterGroup) {
@@ -136,7 +136,7 @@ func GetProcConsole(c *gin.Context) {
 }
 
 func GetDisks(c *gin.Context) {
-	disks, err := ftkimager.GetDisks()
+	disks, err := external.GetDisks()
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "interval server error"})

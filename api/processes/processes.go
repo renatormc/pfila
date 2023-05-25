@@ -16,7 +16,7 @@ import (
 	"github.com/renatormc/pfila/api/database"
 	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/database/repo"
-	"github.com/renatormc/pfila/api/helpers"
+
 	"github.com/renatormc/pfila/api/utils"
 
 	"gorm.io/gorm"
@@ -40,44 +40,86 @@ func WriteErrorToConsole(err error, proc *models.Process) error {
 	return nil
 }
 
-// func Run(proc *models.Process) error {
-// 	cf := config.GetConfig()
-// 	cmd := exec.Command(filepath.Join(cf.AppDir, "pfila_worker"), "-p", fmt.Sprintf("%d", proc.ID))
-// 	err := cmd.Start()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	err = cmd.Process.Release()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	proc.Pid = cmd.Process.Pid
-// 	err = cmd.Process.Release()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	proc.Start = time.Now()
-// 	proc.Status = "EXECUTANDO"
-
-// 	db := database.GetDatabase()
-// 	err = db.Save(&proc).Error
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	return nil
-// }
-
-func StopProcess(proc *models.Process) error {
-	p, err := helpers.GetProcess(int32(proc.Pid), proc.Start)
+func Run(proc *models.Process) {
+	log.Printf("start running %d\n", proc.ID)
+	cf := config.GetConfig()
+	outfile, err := os.Create(filepath.Join(cf.ConsoleFolder, proc.RandomID))
 	if err != nil {
-		return nil
+		log.Println(err)
+		return
+	}
+	defer func() {
+		outfile.Close()
+		DeleteRunningCmd(proc.ID)
+	}()
+	args, err := GetCmdArgs(proc)
+	if err != nil {
+		outfile.WriteString(err.Error())
+		log.Println(err)
+		proc.Status = "ERRO"
+		proc.Finish = time.Now()
+		err = repo.SaveProc(proc)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+	cmd := exec.Command(args[0], args[1:]...)
+	SaveRunningCmd(proc.ID, cmd)
+	cmd.Stderr = outfile
+	cmd.Stdout = outfile
+	cmd.Stdin = os.Stdin
+
+	proc.Status = "EXECUTANDO"
+	proc.Start = time.Now()
+	err = repo.SaveProc(proc)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	if err := p.Kill(); err != nil {
+	if err := cmd.Run(); err != nil {
+		log.Println(err)
+		outfile.WriteString("\nPFila: Finalizou com erro")
+		proc, err := repo.GetProcessById(int64(proc.ID))
+		if err != nil {
+			outfile.WriteString(fmt.Sprintf("Process of id %d not found", proc.ID))
+			log.Printf("Process of id %d not found", proc.ID)
+			return
+		}
+		proc.Status = "ERRO"
+		proc.Finish = time.Now()
+		err = repo.SaveProc(proc)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
+	proc, err = repo.GetProcessById(int64(proc.ID))
+	if err != nil {
+		outfile.WriteString(fmt.Sprintf("Process of id %d not found", proc.ID))
+		log.Printf("Process of id %d not found", proc.ID)
+		return
+	}
+	proc.Status = "FINALIZADO"
+	proc.Finish = time.Now()
+	err = repo.SaveProc(proc)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func StopProcess(proc *models.Process) error {
+	cmd := GetRunningCmd(proc.ID)
+	if cmd == nil {
+		log.Fatalf("not found process %d", proc.ID)
+	}
+
+	if err := cmd.Process.Kill(); err != nil {
 		log.Println(err)
 		return err
 	}
+	DeleteRunningCmd(proc.ID)
 
 	if proc.IsDocker {
 		err := exec.Command("docker", "stop", proc.RandomID).Run()
@@ -137,32 +179,32 @@ func GetProcConsole(proc *models.Process, nLines int) string {
 	return strings.TrimSpace(strings.Join(lines, "\n"))
 }
 
-func CheckRunningProcs() error {
-	db := database.GetDatabase()
-	procs := []models.Process{}
-	if err := db.Where("status = ?", "EXECUTANDO").Find(&procs).Error; err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return err
-		}
-	}
-	for _, proc := range procs {
-		_, err := helpers.GetProcess(int32(proc.Pid), proc.Start)
-		if err != nil {
-			res := CheckConsoleEndMessage(&proc)
-			if res == StatusOk {
-				proc.Status = "FINALIZADO"
-			} else {
-				proc.Status = "ERRO"
-			}
-			proc.Finish = time.Now()
-			err = repo.SaveProc(&proc)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
+// func CheckRunningProcs() error {
+// 	db := database.GetDatabase()
+// 	procs := []models.Process{}
+// 	if err := db.Where("status = ?", "EXECUTANDO").Find(&procs).Error; err != nil {
+// 		if !errors.Is(err, gorm.ErrRecordNotFound) {
+// 			return err
+// 		}
+// 	}
+// 	for _, proc := range procs {
+// 		_, err := helpers.GetProcess(int32(proc.Pid), proc.Start)
+// 		if err != nil {
+// 			res := CheckConsoleEndMessage(&proc)
+// 			if res == StatusOk {
+// 				proc.Status = "FINALIZADO"
+// 			} else {
+// 				proc.Status = "ERRO"
+// 			}
+// 			proc.Finish = time.Now()
+// 			err = repo.SaveProc(&proc)
+// 			if err != nil {
+// 				return err
+// 			}
+// 		}
+// 	}
+// 	return nil
+// }
 
 func CheckWaitingDep() error {
 	db := database.GetDatabase()
@@ -203,9 +245,6 @@ func CheckWaitingDep() error {
 }
 
 func CheckProcesses() error {
-	if err := CheckRunningProcs(); err != nil {
-		return err
-	}
 	if err := CheckWaitingDep(); err != nil {
 		return err
 	}
@@ -227,12 +266,7 @@ func CheckProcesses() error {
 			}
 			return err
 		}
-		proc.Status = "PROXIMO"
-		err = repo.SaveProc(&proc)
-		if err != nil {
-			return err
-		}
-
+		go Run(&proc)
 	}
 	return nil
 }

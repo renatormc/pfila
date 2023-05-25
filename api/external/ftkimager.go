@@ -1,4 +1,4 @@
-package ftkimager
+package external
 
 import (
 	"fmt"

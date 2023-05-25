@@ -1,4 +1,4 @@
-package ftkimager
+package processes
 
 import (
 	"fmt"
@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	"github.com/renatormc/pfila/api/database/models"
+	"github.com/renatormc/pfila/api/external"
 	"github.com/renatormc/pfila/api/helpers"
+
 	"github.com/renatormc/pfila/api/utils"
 )
 
@@ -23,7 +25,7 @@ func (FtkimagerParams) IsDocker() bool {
 }
 
 func (p *FtkimagerParams) ToCmdArgs(proc *models.Process) ([]string, error) {
-	disks, err := GetDisks()
+	disks, err := external.GetDisks()
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +44,7 @@ func (p *FtkimagerParams) ToCmdArgs(proc *models.Process) ([]string, error) {
 }
 
 func (p *FtkimagerParams) Validate(ve *helpers.ValidationError) {
-	disks, err := GetDisks()
+	disks, err := external.GetDisks()
 	if err != nil {
 		log.Println(err)
 		ve.AddMessage("internal", "internal error")
