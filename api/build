@@ -1,3 +1,2 @@
 #!/bin/bash
-go1.20 build -o ./dist/pfila &&
-cd runner && go1.20 build -o ../dist/pfila_runner
+go1.20 build -o ./dist/pfila
