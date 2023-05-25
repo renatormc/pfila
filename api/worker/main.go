@@ -17,7 +17,26 @@ import (
 	"gorm.io/gorm"
 )
 
-func RunNext() {
+type CurrentProcess struct {
+	cmd  *exec.Cmd
+	proc *models.Process
+}
+
+type Worker struct {
+	current *CurrentProcess
+}
+
+func (w *Worker) Loop() {
+	for {
+		if w.current == nil {
+			w.PrepareNext()
+			go w.RunNext()
+		}
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func (w *Worker) PrepareNext() {
 	db := database.GetDatabase()
 	proc := &models.Process{}
 	err := db.Where("status = ?", "PROXIMO").Order("start_waiting asc").First(proc).Error
@@ -38,12 +57,24 @@ func RunNext() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	w.cmd = exec.Command(args[0], args[1:]...)
+}
 
-	runner := filepath.Join(cf.AppDir, "pfila_runner")
-	cmd := exec.Command(runner, append([]string{outfilePath}, args...)...)
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
+func (w *Worker) RunNext() {
+	cf := config.GetConfig()
+	outfile, err := os.Create(filepath.Join(cf.ConsoleFolder, proc.RandomID))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer outfile.Close()
+	args, err := GetCmdArgs(&proc)
+	if err != nil {
+		outfile.WriteString(err.Error())
+		log.Println(err)
+	}
+	w.cmd.Stderr = os.Stderr
+	w.cmd.Stdout = os.Stdout
+	w.cmd.Stdin = os.Stdin
 	log.Printf("Starting %d\n", proc.ID)
 	if err := cmd.Start(); err != nil {
 		outfile.WriteString("\nPFila: Finalizou com erro")
@@ -104,8 +135,6 @@ func RunNext() {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	for {
-		RunNext()
-		time.Sleep(5 * time.Second)
-	}
+	w := Worker{}
+	w.Loop()
 }
