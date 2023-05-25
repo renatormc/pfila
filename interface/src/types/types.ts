@@ -28,6 +28,7 @@ export interface Process {
     status: string;
     random_id: string;
     dependencies: string;
+    pid: number;
     params: ProcParams
 }
 
@@ -84,7 +85,8 @@ export function getDefaultProcess(ptype: ProcType): Process {
         status: "ADDED",
         random_id: "",
         dependencies: "",
-        params: pars
+        params: pars,
+        pid: 0
     }
     return p
 }

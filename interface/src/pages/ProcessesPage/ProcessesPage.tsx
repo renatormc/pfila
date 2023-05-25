@@ -145,6 +145,9 @@ function ProcessesPage() {
                                 <th scope="col " className="px-6 py-3">
                                     Dependências
                                 </th>
+                                <th scope="col " className="px-6 py-3">
+                                    PID
+                                </th>
                                 <th scope="col" className="px-6 py-3">
                                     Status
                                 </th>
@@ -184,6 +187,9 @@ function ProcessesPage() {
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         {proc.dependencies}
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        {proc.pid}
                                     </td>
                                     <td className="px-6 py-4">
                                         {proc.status}
