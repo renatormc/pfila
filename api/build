@@ -1,2 +1,2 @@
 #!/bin/bash
-go1.20 build -o ./dist/pfila
+go1.20 build -o ../dist/pfila

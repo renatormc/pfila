@@ -94,3 +94,19 @@ func ReadTail(filePath string, limit int) (string, error) {
 
 	return string(buffer), nil
 }
+
+func RemoveSliceItem[T comparable](slice []T, itemToRemove T) []T {
+	indexToRemove := -1
+
+	for i, item := range slice {
+		if item == itemToRemove {
+			indexToRemove = i
+			break
+		}
+	}
+	if indexToRemove != -1 {
+		slice = append(slice[:indexToRemove], slice[indexToRemove+1:]...)
+	}
+
+	return slice
+}

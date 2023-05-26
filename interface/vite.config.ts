@@ -4,7 +4,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/static/',
+  base: process.env.ENV === "prod" ? '/static/' : '',
   resolve: {
     alias: [
       { find: '~', replacement: path.resolve(__dirname, 'src') },

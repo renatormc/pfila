@@ -4,32 +4,44 @@ import (
 	"os/exec"
 )
 
-var runningCmd map[uint]*exec.Cmd
-
-func initialize() {
-	if runningCmd == nil {
-		runningCmd = make(map[uint]*exec.Cmd)
-	}
+type RunningCmds struct {
+	Cmds map[uint]*exec.Cmd
 }
 
-func SaveRunningCmd(id uint, cmd *exec.Cmd) {
-	initialize()
-	runningCmd[id] = cmd
+func (rc *RunningCmds) SaveRunningCmd(id uint, cmd *exec.Cmd) {
+	rc.Cmds[id] = cmd
 }
 
-func GetRunningCmd(id uint) *exec.Cmd {
-	initialize()
-	cmd, ok := runningCmd[id]
+func (rc *RunningCmds) GetRunningCmd(id uint) *exec.Cmd {
+	cmd, ok := rc.Cmds[id]
 	if !ok {
 		return nil
 	}
 	return cmd
 }
 
-func DeleteRunningCmd(id uint) {
-	initialize()
-	cmd := GetRunningCmd(id)
+func (rc *RunningCmds) DeleteRunningCmd(id uint) {
+	cmd := rc.GetRunningCmd(id)
 	if cmd != nil {
-		delete(runningCmd, id)
+		delete(rc.Cmds, id)
 	}
+}
+
+func (rc *RunningCmds) GetIDs() []uint {
+	var ids []uint
+	for key := range rc.Cmds {
+		ids = append(ids, key)
+	}
+	return ids
+}
+
+var runningCmds *RunningCmds
+
+func GetRunningCmds() *RunningCmds {
+	if runningCmds == nil {
+		runningCmds = &RunningCmds{
+			Cmds: make(map[uint]*exec.Cmd),
+		}
+	}
+	return runningCmds
 }

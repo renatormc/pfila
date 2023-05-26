@@ -50,7 +50,7 @@ func Run(proc *models.Process) {
 	}
 	defer func() {
 		outfile.Close()
-		DeleteRunningCmd(proc.ID)
+		GetRunningCmds().DeleteRunningCmd(proc.ID)
 	}()
 	args, err := GetCmdArgs(proc)
 	if err != nil {
@@ -65,7 +65,7 @@ func Run(proc *models.Process) {
 		return
 	}
 	cmd := exec.Command(args[0], args[1:]...)
-	SaveRunningCmd(proc.ID, cmd)
+	GetRunningCmds().SaveRunningCmd(proc.ID, cmd)
 	cmd.Stderr = outfile
 	cmd.Stdout = outfile
 	cmd.Stdin = os.Stdin
@@ -110,7 +110,7 @@ func Run(proc *models.Process) {
 }
 
 func StopProcess(proc *models.Process) error {
-	cmd := GetRunningCmd(proc.ID)
+	cmd := GetRunningCmds().GetRunningCmd(proc.ID)
 	if cmd == nil {
 		log.Fatalf("not found process %d", proc.ID)
 	}
@@ -119,7 +119,7 @@ func StopProcess(proc *models.Process) error {
 		log.Println(err)
 		return err
 	}
-	DeleteRunningCmd(proc.ID)
+	GetRunningCmds().DeleteRunningCmd(proc.ID)
 
 	if proc.IsDocker {
 		err := exec.Command("docker", "stop", proc.RandomID).Run()
@@ -223,15 +223,9 @@ func CheckWaitingDep() error {
 		}
 		allFinished := true
 		for _, p := range deps {
-			if p.Status == "ERRO" {
-				proc.Status = "ERRO"
-				proc.Finish = time.Now().Local()
-				if err := db.Save(&proc).Error; err != nil {
-					return err
-				}
-				break
-			} else if p.Status != "FINALIZADO" {
+			if p.Status != "FINALIZADO" {
 				allFinished = false
+				break
 			}
 		}
 		if allFinished {
@@ -244,29 +238,58 @@ func CheckWaitingDep() error {
 	return nil
 }
 
+func HasDependencyNotFinished(proc *models.Process) (bool, error) {
+	db := database.GetDatabase()
+	deps := proc.GetDependencies()
+	var count int64
+	if err := db.Model(&models.Process{}).Where("status != ?", "FINALIZADO").Where("id IN ?", deps).Count(&count).Error; err != nil {
+		log.Println(err)
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func GetNext() (*models.Process, error) {
+	db := database.GetDatabase()
+	proc := models.Process{}
+	err := db.Where("status = ?", "AGUARDANDO").Order("start_waiting asc").First(&proc).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	return &proc, nil
+}
+
 func CheckProcesses() error {
+	if len(GetRunningCmds().Cmds) > 0 {
+		return nil
+	}
+
+	// Check if there is any process that was waiting dependencies if its dependencies has finished
 	if err := CheckWaitingDep(); err != nil {
 		return err
 	}
 
-	db := database.GetDatabase()
-	procs := []models.Process{}
-	if err := db.Where("status = ?", "EXECUTANDO").Find(&procs).Error; err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return err
-		}
-	}
-	if len(procs) == 0 {
-		proc := models.Process{}
-
-		err := db.Where("status = ?", "AGUARDANDO").Order("start_waiting asc").First(&proc).Error
+	for {
+		proc, err := GetNext()
 		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil
-			}
 			return err
 		}
-		go Run(&proc)
+		if proc == nil {
+			break
+		}
+		hasDep, err := HasDependencyNotFinished(proc)
+		if err != nil {
+			return err
+		}
+		if hasDep {
+			proc.Status = "AGUARDANDO_DEP"
+			if err := repo.SaveProc(proc); err != nil {
+				return err
+			}
+		} else {
+			go Run(proc)
+			break
+		}
 	}
 	return nil
 }
