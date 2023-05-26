@@ -1,0 +1,6 @@
+Para instalar e utilizar siga os passos a seguir
+
+1- Copie esta pasta para um local de sua preferênica na sua máquina.
+2- Edite o arquivo pfila.toml com suas configurações locais.
+3- Clique com o botão direito do mouse em cima do arquiov pfila.exe e escolha "Executar como administrador".
+4- Vá até seu navegador e a acesse no endereço http://localhost:8000

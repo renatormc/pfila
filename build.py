@@ -4,8 +4,8 @@ import os
 workdir = Path(".").absolute()
 os.chdir(workdir / "api")
 print("Compilando API...")
-if os.name == "windows":
-    os.system("build.bat")
+if os.name == "nt":
+    os.system(".\\build.bat")
 else:
     os.system("./build")
 print("Compilando interface...")
