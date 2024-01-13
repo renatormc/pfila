@@ -3,6 +3,7 @@ package helpers
 import (
 	"errors"
 	"log"
+	"net"
 	"net/http"
 	"strconv"
 
@@ -65,4 +66,23 @@ func DeleteModel(c *gin.Context, model interface{}) bool {
 		return false
 	}
 	return true
+}
+
+func IsPortBusy(port int) bool {
+	ln, err := net.Listen("tcp", ":"+strconv.Itoa(port))
+	if err != nil {
+		return true
+	}
+	defer ln.Close()
+	return false
+}
+
+func GetFreePort() int {
+	for i := 8000; i <= 8999; i++ {
+		if !IsPortBusy(i) {
+			return i
+		}
+	}
+	log.Fatal("No port available")
+	return 0
 }
