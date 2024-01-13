@@ -20,6 +20,8 @@ func GetParams(proc *models.Process) (Params, error) {
 		pars = &IpedParams{}
 	case "ftkimager":
 		pars = &FtkimagerParams{}
+	case "freecmd":
+		pars = &FreecmdParams{}
 	default:
 		return nil, fmt.Errorf("type %q unknown", proc.Type)
 	}
