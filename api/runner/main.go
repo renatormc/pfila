@@ -12,38 +12,64 @@ import (
 	"github.com/akamensky/argparse"
 	"github.com/gin-gonic/gin"
 	"github.com/renatormc/pfila/api/config"
-	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/database/repo"
 	"github.com/renatormc/pfila/api/processes"
 )
 
-func Run(proc *models.Process) {
-	log.Printf("start running %d\n", proc.ID)
+type Runner struct {
+	Cmd     *exec.Cmd
+	Outfile *os.File
+	ProcID  int64
+}
+
+func NewRunner(procID int64) *Runner {
+	return &Runner{ProcID: procID}
+}
+
+func (r *Runner) Cancel() {
+	if err := r.Cmd.Process.Kill(); err != nil {
+		log.Println(err)
+		return
+	}
+	r.RegisterFinish("ERRO", "Processo cancelado pelo usuário.")
+}
+
+func (r *Runner) RegisterFinish(status string, message string) {
+	proc := repo.GetProcessByIdOrFail(r.ProcID)
+	proc.Status = status
+	proc.Finish = time.Now()
+	if err := repo.SaveProc(proc); err != nil {
+		log.Fatal(err)
+	}
+	if message != "" {
+		r.Outfile.WriteString(message)
+	}
+}
+
+func (r *Runner) Run() {
+	log.Printf("start running %d\n", r.ProcID)
 	cf := config.GetConfig()
-	outfile, err := os.Create(filepath.Join(cf.ConsoleFolder, proc.RandomID))
+	proc := repo.GetProcessByIdOrFail(r.ProcID)
+	var err error
+	r.Outfile, err = os.Create(filepath.Join(cf.ConsoleFolder, proc.RandomID))
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	defer func() {
-		outfile.Close()
+		r.Outfile.Close()
 		os.Exit(0)
 	}()
 	args, err := processes.GetCmdArgs(proc)
 	if err != nil {
-		outfile.WriteString(err.Error())
+		r.Outfile.WriteString(err.Error())
 		log.Println(err)
-		proc.Status = "ERRO"
-		proc.Finish = time.Now()
-		err = repo.SaveProc(proc)
-		if err != nil {
-			log.Fatal(err)
-		}
+		r.RegisterFinish("ERRO", err.Error())
 		return
 	}
 	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Stderr = outfile
-	cmd.Stdout = outfile
+	cmd.Stderr = r.Outfile
+	cmd.Stdout = r.Outfile
 	cmd.Stdin = os.Stdin
 
 	proc.Status = "EXECUTANDO"
@@ -55,41 +81,33 @@ func Run(proc *models.Process) {
 
 	if err := cmd.Run(); err != nil {
 		log.Println(err)
-		outfile.WriteString("\nPFila: Finalizou com erro")
+		r.Outfile.WriteString("\nPFila: Finalizou com erro")
 		proc, err := repo.GetProcessById(int64(proc.ID))
 		if err != nil {
-			outfile.WriteString(fmt.Sprintf("Process of id %d not found", proc.ID))
+			r.Outfile.WriteString(fmt.Sprintf("Process of id %d not found", proc.ID))
 			log.Printf("Process of id %d not found", proc.ID)
 			return
 		}
-		proc.Status = "ERRO"
-		proc.Finish = time.Now()
-		err = repo.SaveProc(proc)
-		if err != nil {
-			log.Fatal(err)
-		}
+		r.RegisterFinish("ERRO", "Erro ao iniciar ao processo")
 		return
 	}
 
-	proc, err = repo.GetProcessById(int64(proc.ID))
-	if err != nil {
-		outfile.WriteString(fmt.Sprintf("Process of id %d not found", proc.ID))
-		log.Printf("Process of id %d not found", proc.ID)
-		return
-	}
-	proc.Status = "FINALIZADO"
-	proc.Finish = time.Now()
-	err = repo.SaveProc(proc)
-	if err != nil {
-		log.Fatal(err)
-	}
+	r.RegisterFinish("FINALIZADO", "Processo finalizado.")
 }
 
-func Serve(port int, procID int) {
+func Serve(port int, runner *Runner) {
 	r := gin.Default()
 
 	r.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"procID": procID})
+		c.JSON(http.StatusOK, gin.H{"procID": runner.ProcID})
+	})
+
+	r.GET("/cancel", func(c *gin.Context) {
+		go func() {
+			time.Sleep(5 * time.Second)
+			runner.Cancel()
+		}()
+		c.JSON(http.StatusOK, gin.H{"procID": runner.ProcID})
 	})
 
 	log.Fatal(r.Run(fmt.Sprintf(":%d", port)))
@@ -103,5 +121,7 @@ func main() {
 	if err != nil {
 		fmt.Print(parser.Usage(err))
 	}
-	Serve(*port, *procID)
+	runner := NewRunner(int64(*procID))
+	go Serve(*port, runner)
+	runner.Run()
 }

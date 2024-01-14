@@ -18,6 +18,15 @@ func GetProcessById(id int64) (*models.Process, error) {
 	return &proc, nil
 }
 
+func GetProcessByIdOrFail(id int64) *models.Process {
+	db := database.GetDatabase()
+	proc := models.Process{}
+	if err := db.First(&proc, id).Error; err != nil {
+		log.Fatal(err)
+	}
+	return &proc
+}
+
 func GetAllProcesses() []models.Process {
 	db := database.GetDatabase()
 	procs := []models.Process{}
