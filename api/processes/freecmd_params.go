@@ -1,6 +1,7 @@
 package processes
 
 import (
+	"runtime"
 	"strings"
 
 	"github.com/renatormc/pfila/api/database/models"
@@ -16,7 +17,14 @@ func (FreecmdParams) IsDocker() bool {
 }
 
 func (p *FreecmdParams) ToCmdArgs(proc *models.Process) ([]string, error) {
-	args := strings.Fields(p.Cmd)
+	var args []string
+	if runtime.GOOS == "windows" {
+		args = []string{"cmd", "/c"}
+	} else {
+		args = []string{"bash"}
+	}
+
+	args = append(args, strings.Fields(p.Cmd)...)
 	return args, nil
 }
 

@@ -1,28 +1,22 @@
 #!/bin/bash
-
-if [ -f .env ]; then
-    export $(cat .env | grep -v '#' | sed 's/\r$//' | awk '/=/ {print $1}')
-fi
-
-if [ -n "$GOEXE" ]; then
-    goExe="$GOEXE"
-else
-    goExe="go"
-fi
+WORKDIR=$(pwd)
 
 case $1 in
 
 "api")
     cd api &&
-        $goExe build -o ../dist/pfila && cd runner && $goExe build -o ../../dist/pfila_runner && cd .. &&
-        cd ../dist && sudo ./pfila serve
+        go build -o "$WORKDIR/dist/pfila" && cd "$WORKDIR/runner" && go build -o "$WORKDIR/dist/pfila_runner" &&
+        cd "$WORKDIR/dist" && sudo ./pfila serve
     ;;
 "interface")
     cd interface && yarn dev
     ;;
 "build")
     cd api &&
-        $goExe build -o ../dist/pfila && cd runner && $goExe build -o ../../dist/pfila_runner && cd ..
+        go build -o "$WORKDIR/dist/pfila" && cd "$WORKDIR/runner" && go build -o "$WORKDIR/dist/pfila_runner" &&
+        echo "Compiling interface..." &&
+        cd "$WORKDIR/interface" && export ENV="prod" && npx vite build --emptyOutDir
+
     ;;
 *)
     echo "Command unknown"

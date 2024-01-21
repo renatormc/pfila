@@ -39,6 +39,7 @@ func LoadFromBody[M any](c *gin.Context, schema LoadSchema[M], model *M) bool {
 		ve := NewValidationError()
 		ve.ParseError(err, schema)
 		c.JSON(http.StatusUnprocessableEntity, ve.Messages)
+
 		return false
 	}
 	if ve := schema.Fill(model); ve != nil {

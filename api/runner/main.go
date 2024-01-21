@@ -6,20 +6,18 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/akamensky/argparse"
 	"github.com/gin-gonic/gin"
-	"github.com/renatormc/pfila/api/config"
 	"github.com/renatormc/pfila/api/database/repo"
 	"github.com/renatormc/pfila/api/processes"
 )
 
 type Runner struct {
-	Cmd     *exec.Cmd
-	Outfile *os.File
-	ProcID  int64
+	Cmd    *exec.Cmd
+	ProcID int64
 }
 
 func NewRunner(procID int64) *Runner {
@@ -27,11 +25,12 @@ func NewRunner(procID int64) *Runner {
 }
 
 func (r *Runner) Cancel() {
+	r.RegisterFinish("ERRO", "Processo cancelado pelo usuário.")
 	if err := r.Cmd.Process.Kill(); err != nil {
 		log.Println(err)
 		return
 	}
-	r.RegisterFinish("ERRO", "Processo cancelado pelo usuário.")
+
 }
 
 func (r *Runner) RegisterFinish(status string, message string) {
@@ -42,53 +41,52 @@ func (r *Runner) RegisterFinish(status string, message string) {
 		log.Fatal(err)
 	}
 	if message != "" {
-		r.Outfile.WriteString(message)
+		fmt.Println(message)
 	}
 }
 
 func (r *Runner) Run() {
 	log.Printf("start running %d\n", r.ProcID)
-	cf := config.GetConfig()
 	proc := repo.GetProcessByIdOrFail(r.ProcID)
 	var err error
-	r.Outfile, err = os.Create(filepath.Join(cf.ConsoleFolder, proc.RandomID))
-	if err != nil {
-		log.Println(err)
-		return
-	}
 	defer func() {
-		r.Outfile.Close()
 		os.Exit(0)
 	}()
 	args, err := processes.GetCmdArgs(proc)
 	if err != nil {
-		r.Outfile.WriteString(err.Error())
 		log.Println(err)
 		r.RegisterFinish("ERRO", err.Error())
 		return
 	}
-	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Stderr = r.Outfile
-	cmd.Stdout = r.Outfile
-	cmd.Stdin = os.Stdin
+	r.Cmd = exec.Command(args[0], args[1:]...)
+	r.Cmd.Stderr = os.Stderr
+	r.Cmd.Stdout = os.Stdout
+
+	if err := r.Cmd.Start(); err != nil {
+		log.Println(err)
+		proc, err := repo.GetProcessById(int64(proc.ID))
+		if err != nil {
+			log.Printf("Process of id %d not found", proc.ID)
+			return
+		}
+		return
+	}
 
 	proc.Status = "EXECUTANDO"
 	proc.Start = time.Now()
+	proc.Pid = r.Cmd.Process.Pid
 	err = repo.SaveProc(proc)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := cmd.Run(); err != nil {
+	if err := r.Cmd.Wait(); err != nil {
 		log.Println(err)
-		r.Outfile.WriteString("\nPFila: Finalizou com erro")
 		proc, err := repo.GetProcessById(int64(proc.ID))
 		if err != nil {
-			r.Outfile.WriteString(fmt.Sprintf("Process of id %d not found", proc.ID))
 			log.Printf("Process of id %d not found", proc.ID)
 			return
 		}
-		r.RegisterFinish("ERRO", "Erro ao iniciar ao processo")
 		return
 	}
 
@@ -102,7 +100,16 @@ func Serve(port int, runner *Runner) {
 		c.JSON(http.StatusOK, gin.H{"procID": runner.ProcID})
 	})
 
-	r.GET("/cancel", func(c *gin.Context) {
+	r.GET("/cancel/:procID", func(c *gin.Context) {
+		procID, err := strconv.ParseInt(c.Param("procID"), 10, 64)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "wrong value"})
+			return
+		}
+		if procID != runner.ProcID {
+			c.JSON(http.StatusNotFound, gin.H{"message": "not found"})
+			return
+		}
 		go func() {
 			time.Sleep(5 * time.Second)
 			runner.Cancel()

@@ -2,9 +2,12 @@ package processes
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -23,52 +26,73 @@ import (
 	"gorm.io/gorm"
 )
 
+type Resp struct {
+	ProcID int `json:"procID"`
+}
+
+func StopProcess(proc *models.Process) error {
+	url := fmt.Sprintf("http://localhost:%d/cancel/%d", proc.Port, proc.ID)
+	response, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("Status Code: %d", response.StatusCode)
+	}
+	return nil
+}
+
 func IsProcessRunning(proc *models.Process) bool {
-	log.Fatalln("Not implemented")
+	url := fmt.Sprintf("http://localhost:%d", proc.Port)
+	response, err := http.Get(url)
+	if err != nil {
+		return false
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return false
+	}
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return false
+	}
+	resp := Resp{}
+	if err := json.Unmarshal(body, &resp); err != nil {
+		return false
+	}
+	if resp.ProcID != int(proc.ID) {
+		return false
+	}
 	return true
 }
 
 func Run(proc *models.Process) {
 	cf := config.GetConfig()
 	proc.Port = helpers.GetFreePort()
-	cmd := exec.Command(filepath.Join(cf.AppDir, "pfila_runner"), "--port", fmt.Sprintf("%d", proc.Port), "--proc-id", fmt.Sprintf("%d", proc.ID))
+	outputFile := filepath.Join(cf.ConsoleFolder, proc.RandomID)
+	scriptExe := filepath.Join(cf.AppDir, "pfila_runner.sh")
+	cmd := exec.Command(scriptExe, fmt.Sprintf("%d", proc.Port), fmt.Sprintf("%d", proc.ID), outputFile)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
-	if err := cmd.Start(); err != nil {
+	if err := cmd.Run(); err != nil {
 		proc.Status = "ERRO"
 		proc.Finish = time.Now()
 		log.Println(err)
 	}
-	if err := cmd.Process.Release(); err != nil {
-		log.Println(err)
-	}
+	// if err := cmd.Start(); err != nil {
+	// 	proc.Status = "ERRO"
+	// 	proc.Finish = time.Now()
+	// 	log.Println(err)
+	// }
+	// if err := cmd.Process.Release(); err != nil {
+	// 	log.Println(err)
+	// }
 	db := database.GetDatabase()
+
 	if err := db.Save(proc).Error; err != nil {
 		log.Fatal(err)
 	}
-}
-
-func StopProcess(proc *models.Process) error {
-	log.Fatalln("not implemented")
-	return nil
-	// cmd := GetRunningCmds().GetRunningCmd(proc.ID)
-	// if cmd == nil {
-	// 	log.Fatalf("not found process %d", proc.ID)
-	// }
-
-	// if err := cmd.Process.Kill(); err != nil {
-	// 	log.Println(err)
-	// 	return err
-	// }
-	// GetRunningCmds().DeleteRunningCmd(proc.ID)
-
-	// if proc.IsDocker {
-	// 	err := exec.Command("docker", "stop", proc.RandomID).Run()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	// return nil
 }
 
 type Status string
@@ -167,7 +191,11 @@ func GetNext() (*models.Process, error) {
 	db := database.GetDatabase()
 	proc := models.Process{}
 	err := db.Where("status = ?", "AGUARDANDO").Order("start_waiting asc").First(&proc).Error
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &proc, nil

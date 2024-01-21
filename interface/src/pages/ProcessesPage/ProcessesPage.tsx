@@ -34,7 +34,6 @@ function ProcessesPage() {
     }
 
     const onNew = (ptype: ProcType) => {
-
         const p = getDefaultProcess(ptype)
         setErrors({})
         setEditingProc(p)

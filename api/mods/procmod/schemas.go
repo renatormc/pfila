@@ -70,7 +70,7 @@ func (pl *ProcSchemaLoad) Fill(m *models.Process) *helpers.ValidationError {
 		ve.AddMessage("name", "Campo obrigatório")
 	}
 	m.Type = pl.Type
-	if m.Type != "iped" && m.Type != "ftkimager" {
+	if m.Type != "iped" && m.Type != "ftkimager" && m.Type != "freecmd" {
 		ve.AddMessage("type", "Tipo não conhecido")
 	}
 	m.User = strings.TrimSpace(pl.User)

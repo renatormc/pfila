@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { ErrorsType, FreecmdParams, FtkParams, ProcType } from '~/types/types'
+import { ErrorsType, FreecmdParams} from '~/types/types'
 import * as api from '~/services/api'
-import Checkbox from '../Checkbox'
-import Select from '../Select'
 import FormField from '../FormField'
-import Input from '../Input'
+import TextArea from '../TextArea'
 
 type Props = {
     params: FreecmdParams,
@@ -42,9 +40,9 @@ const FreecmdProc = ({ params, setParams, errors, loadingParams, setLoadingParam
 
     return <>
 
-        <FormField label='Destino' errors={errors?.destination}>
-            <Input className='w-full' onChange={(v) => { updateField('cmd', v) }}
-                value={params?.cmd} placeholder='Command to be executed' />
+        <FormField label='Comando' errors={errors?.destination}>
+            <TextArea className='w-full' onChange={(v) => { updateField('cmd', v) }}
+                value={params?.cmd} placeholder='Command to be executed' rows={5}/>
         </FormField>
 
     </>

@@ -1,7 +1,3 @@
-// import sptcLogo from '~/assets/sptc_logo.png'
-import { Link } from 'react-router-dom'
-import { useContext } from 'react'
-import AppContext, { AppContextType } from '~/AppContext'
 import { ProcType } from '~/types/types'
 import Button from './Button'
 
@@ -9,10 +5,6 @@ type Props = {
     onNew?: (ptype: ProcType) => void,
 }
 
-// function Button(label: string, onClick?: () => void) {
-//     return <button className="block py-2 pr-4 pl-3 text-gray-100 rounded hover:bg-blue-600 bg-blue-400"
-//         onClick={onClick}>{label}</button>
-// }
 
 function NavBar1({ onNew }: Props) {
 
@@ -28,23 +20,11 @@ function NavBar1({ onNew }: Props) {
                 </button>
                 <div className="hidden w-full md:block md:w-auto">
                     <ul className="flex flex-col px-4 mt-4 rounded-lg border border-gray-100 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 ">
-
-                        {/* <li>
-                            <Link to="/users" className="block py-2 pr-4 pl-3 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Usuários</Link>
-                        </li>
-                      
-                        <li>
-                            <Link to="/cases" className="block py-2 pr-4 pl-3 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Casos</Link>
-                        </li>
-                        <li>
-                            <Link to="/case-tokens" className="block py-2 pr-4 pl-3 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Tokens</Link>
-                        </li> */}
-
-
                         <li>
                             <div className='flex gap-4'>
                                 <Button label="Novo IPED" onClick={() => { onNew?.('iped') }} variant='blue' />
                                 <Button label="Nova Imagem" onClick={() => { onNew?.('ftkimager') }} variant='blue' />
+                                <Button label="Novo comando" onClick={() => { onNew?.('freecmd') }} variant='blue' />
                             </div>
 
                         </li>
