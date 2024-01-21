@@ -14,7 +14,7 @@ export interface ListResponse<T> {
     items: T[];
 }
 
-export type ProcType = "iped" | "ftkimager"
+export type ProcType = "iped" | "ftkimager" | "freecmd"
 
 export interface Process {
     id: number;
@@ -32,7 +32,7 @@ export interface Process {
     params: ProcParams
 }
 
-export type ProcParams = IpedParams | FtkParams | string
+export type ProcParams = IpedParams | FtkParams | FreecmdParams | string
 
 export interface IpedParams {
     destination: string;
@@ -55,6 +55,14 @@ export interface FtkParams {
     format: string;
 }
 
+export const DEFAULT_FREECMD_PARAMS: FreecmdParams = {
+    cmd: ""
+}
+
+export interface FreecmdParams {
+    cmd: string;
+}
+
 export const DEFAULT_FTK_PARAMS: FtkParams = {
     disk: "",
     destination: "",
@@ -71,6 +79,10 @@ export function getDefaultProcess(ptype: ProcType): Process {
         case "ftkimager":
             pars = { ...DEFAULT_FTK_PARAMS }
             break
+        case "freecmd":
+            pars = { ...DEFAULT_FREECMD_PARAMS }
+            break
+
     }
     
     const p = {

@@ -1,3 +1,0 @@
-#!/bin/bash
-./build &&
-cd ../dist && sudo ./pfila $@

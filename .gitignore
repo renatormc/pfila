@@ -1,3 +1,4 @@
 .python-version
 .venv
 test.py
+.env

@@ -1,7 +1,8 @@
 import React from 'react'
-import { ErrorsType, FtkParams, IpedParams, ProcParams, ProcType } from '~/types/types'
+import { ErrorsType, FreecmdParams, FtkParams, IpedParams, ProcParams, ProcType } from '~/types/types'
 import IpedProc from './IpedProc'
 import FtkimagerProc from './FtkimagerProc'
+import FreecmdProc from './FreecmdProc'
 
 type Props = {
     ptype: ProcType,
@@ -25,6 +26,12 @@ const SwitchProc = ({ ptype, params, setParams, errors, loadingParams, setLoadin
                 setLoadingParams={setLoadingParams}/>
         case "ftkimager":
             return <FtkimagerProc params={params as FtkParams}
+                setParams={setParams}
+                errors={errors} 
+                loadingParams={loadingParams}
+                setLoadingParams={setLoadingParams}/>
+        case "freecmd":
+            return <FreecmdProc params={params as FreecmdParams}
                 setParams={setParams}
                 errors={errors} 
                 loadingParams={loadingParams}

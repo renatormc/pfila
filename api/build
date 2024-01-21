@@ -1,2 +1,0 @@
-#!/bin/bash
-go build -o ../dist/pfila && cd runner && go build -o ../../dist/pfila_runner
