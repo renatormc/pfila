@@ -2,12 +2,8 @@ package processes
 
 import (
 	"bufio"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,60 +15,61 @@ import (
 	"github.com/renatormc/pfila/api/database"
 	"github.com/renatormc/pfila/api/database/models"
 	"github.com/renatormc/pfila/api/database/repo"
-	"github.com/renatormc/pfila/api/helpers"
 
 	"github.com/renatormc/pfila/api/utils"
 
+	"github.com/shirou/gopsutil/process"
 	"gorm.io/gorm"
 )
+
+func GetProcessStartTime(pid int32) (time.Time, error) {
+	proc, err := process.NewProcess(pid)
+	if err != nil {
+		return time.Time{}, err
+	}
+	proc.Kill()
+	createTime, err := proc.CreateTime()
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	startTime := time.Unix(createTime, 0)
+	return startTime, nil
+}
 
 type Resp struct {
 	ProcID int `json:"procID"`
 }
 
 func StopProcess(proc *models.Process) error {
-	url := fmt.Sprintf("http://localhost:%d/cancel/%d", proc.Port, proc.ID)
-	response, err := http.Get(url)
+	p, err := process.NewProcess(int32(proc.Pid))
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
-	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("Status Code: %d", response.StatusCode)
+	if err := p.Kill(); err != nil {
+		return err
 	}
 	return nil
 }
 
 func IsProcessRunning(proc *models.Process) bool {
-	url := fmt.Sprintf("http://localhost:%d", proc.Port)
-	response, err := http.Get(url)
+	t, err := GetProcessStartTime(int32(proc.Pid))
 	if err != nil {
-		return false
+		log.Fatal(err)
 	}
-	defer response.Body.Close()
-	if response.StatusCode != http.StatusOK {
-		return false
+	delta := proc.Start.Sub(t)
+	threshold := time.Second * 2
+	if delta > -threshold && delta < threshold {
+		return true
 	}
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return false
-	}
-	resp := Resp{}
-	if err := json.Unmarshal(body, &resp); err != nil {
-		return false
-	}
-	if resp.ProcID != int(proc.ID) {
-		return false
-	}
-	return true
+	return false
 }
 
 func Run(proc *models.Process) {
 	cf := config.GetConfig()
-	proc.Port = helpers.GetFreePort()
 	outputFile := filepath.Join(cf.ConsoleFolder, proc.RandomID)
 	scriptExe := filepath.Join(cf.AppDir, "pfila_runner.sh")
-	cmd := exec.Command(scriptExe, fmt.Sprintf("%d", proc.Port), fmt.Sprintf("%d", proc.ID), outputFile)
+	cmd := exec.Command(scriptExe, outputFile)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	if err := cmd.Run(); err != nil {

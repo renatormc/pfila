@@ -5,7 +5,7 @@ case $1 in
 
 "api")
     cd api &&
-        go build -o "$WORKDIR/dist/pfila" && cd "$WORKDIR/runner" && go build -o "$WORKDIR/dist/pfila_runner" &&
+        go build -o "$WORKDIR/dist/pfila" &&
         cd "$WORKDIR/dist" && sudo ./pfila serve
     ;;
 "interface")
@@ -13,7 +13,7 @@ case $1 in
     ;;
 "build")
     cd api &&
-        go build -o "$WORKDIR/dist/pfila" && cd "$WORKDIR/runner" && go build -o "$WORKDIR/dist/pfila_runner" &&
+        go build -o "$WORKDIR/dist/pfila" &&
         echo "Compiling interface..." &&
         cd "$WORKDIR/interface" && export ENV="prod" && npx vite build --emptyOutDir
 

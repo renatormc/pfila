@@ -16,7 +16,6 @@ type Process struct {
 	Name         string
 	User         string
 	Pid          int
-	Port         int
 	CreatedAt    time.Time
 	Start        time.Time
 	StartWaiting time.Time
