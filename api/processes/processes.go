@@ -80,14 +80,6 @@ func Run(proc *models.Process) {
 		proc.Finish = time.Now()
 		log.Println(err)
 	}
-	// if err := cmd.Start(); err != nil {
-	// 	proc.Status = "ERRO"
-	// 	proc.Finish = time.Now()
-	// 	log.Println(err)
-	// }
-	// if err := cmd.Process.Release(); err != nil {
-	// 	log.Println(err)
-	// }
 	db := database.GetDatabase()
 
 	if err := db.Save(proc).Error; err != nil {
