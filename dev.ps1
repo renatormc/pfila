@@ -5,8 +5,6 @@ try {
         "api" {
             Set-Location "$WORKDIR\api"
             go build -o "$WORKDIR\dist\pfila.exe"
-            Set-Location "$WORKDIR\api\runner"
-            go build -o "$WORKDIR\dist\pfila_runner.exe"
             Set-Location "$WORKDIR\dist"
             Invoke-Expression ".\pfila.exe serve"
         }
@@ -17,8 +15,6 @@ try {
         "build" {
             Set-Location "$WORKDIR\api"
             go build -o "$WORKDIR\dist\pfila.exe"
-            Set-Location "$WORKDIR\api\runner"
-            go build -o "$WORKDIR\dist\pfila_runner.exe"
             Write-Host "Compiling interface..."
             Set-Location "$WORKDIR\interface"
             $env:ENV = "prod"

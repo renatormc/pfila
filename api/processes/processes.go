@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"strings"
@@ -65,11 +66,43 @@ func IsProcessRunning(proc *models.Process) bool {
 	return false
 }
 
+// func ReplaceScriptVars(proc *models.Process) string {
+// 	cf := config.GetConfig()
+// 	params, err := GetCmdArgs(proc)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	cmd := strings.
+// 	var scriptExe string
+// 	if runtime.GOOS == "windows" {
+// 		scriptExe = filepath.Join(cf.AppDir, "pfila_runner.ps1")
+// 	} else {
+// 		scriptExe = filepath.Join(cf.AppDir, "pfila_runner.sh")
+// 	}
+// 	content, err := os.ReadFile(scriptExe)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	text := string(content)
+// 	text = strings.ReplaceAll(text, "$")
+// }
+
 func Run(proc *models.Process) {
 	cf := config.GetConfig()
 	outputFile := filepath.Join(cf.ConsoleFolder, proc.RandomID)
-	scriptExe := filepath.Join(cf.AppDir, "pfila_runner.sh")
-	cmd := exec.Command(scriptExe, outputFile)
+	params, err := GetCmdArgs(proc)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		scriptExe := filepath.Join(cf.AppDir, "pfila_runner.ps1")
+
+		cmd = exec.Command("powershell", scriptExe, outputFile)
+	} else {
+		scriptExe := filepath.Join(cf.AppDir, "pfila_runner.sh")
+		cmd = exec.Command(scriptExe, outputFile)
+	}
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	if err := cmd.Run(); err != nil {
